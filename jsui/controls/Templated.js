@@ -1,9 +1,9 @@
 ﻿define(['underscore', 'backbone', '../Control', 'jquery'],
     function (_, Backbone, Control, $) {
         return Control.extend({
+            Controls: {},
             initialise: function () {
                 Control.initialise.apply(this, arguments);
-               
                 _.bindAll(this, "OnCreateControl");
             },
             OnRender: function () {

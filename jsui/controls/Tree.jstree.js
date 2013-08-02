@@ -11,23 +11,21 @@
             OnInitialise: function () {
                 this.nodes = [];
                 //  this.SetDataCollection(new Backbone.Collection);
-               // this.$el.addClass('ui-menu ui-widget ui-widget-content ui-corner-all ui-menu-icons');
+                // this.$el.addClass('ui-menu ui-widget ui-widget-content ui-corner-all ui-menu-icons');
                 this.root = $('<ul></ul>');
                 // _.bindAll(this, ''); // fixes loss of context for 'this' within methods
 
             },
             OnConfigure: function (config) {
-                console.log("SET CONFIG", { config: config });
                 if (config.collection) {
-                    
+
                     this.SetDataCollection(config.collection);
-                    
+
                 }
-                console.log("BOUND", { config: config });
             },
             SetDataCollection: function (col) {
                 this.collection = col;
-                
+
                 this.listenTo(this.collection, 'add', this.OnDataAdd);
                 this.listenTo(this.collection, 'remove', this.OnDataRemove);
                 this.listenTo(this.collection, 'change', this.OnDataChange);
@@ -35,14 +33,137 @@
             OnRender: function () {
 
                 $(this.el).append(this.root);
-                this.jstree = $(this.root).jstree();
-                console.log("JSTREE", this.jstree);
+                this.jstree = $(this.root).bind("before.jstree", _.bind(function (e, data) {
+
+                    //var selected = data.inst.get_selected();
+                    // console.log("Action", { func: data.func, Id: $(data.args[0]).attr("Id"), data: data, selected: selected });
+
+
+                    switch (data.func) {
+                        case "open_node":
+                            //   {
+                            //                    data: {
+                            //                        ParentItem: this.node.NodeID,
+                            //                        Application: 
+                            //                    }, success: _.bind(function () {
+                            if (this.config.Events) {
+                                if (this.config.Events.Expand) {
+                                    this.config.Events.Expand($(data.args[0]).attr("Id"), this.collection);
+                                }
+
+                            }
+
+                            //console.log("Open node", { e: e, data: data });
+                            break;
+                            //   case "save_selected":
+
+
+                            //       break;
+
+                    }
+                }, this))
+                    .jstree({
+                        "plugins": [
+                           // "themes",
+                           "themeroller",
+                           "dnd",
+                           "ui",
+                           "crrm",
+                           "contextmenu"]
+                    }).bind("loaded.jstree", function (event, data) {
+                        // console.log("LOADED JSTREE");
+                        // you get two params - event & data - check the core docs for a detailed description
+                    }).bind("select_node.jstree", _.bind(function (event, data) {
+                        // `data.rslt.obj` is the jquery extended node that was clicked
+                        console.log("selected node", data.rslt.obj.attr("id"));
+
+                        if (this.config.Events) {
+                            if (this.config.Events.Select) {
+                                this.config.Events.Select(this.collection.get(data.rslt.obj.attr("id")));
+
+                            }
+                        }
+
+                    }, this)).bind("create.jstree", _.bind(function (e, data) {
+                        if ($(data.rslt.obj).attr('Id') === undefined) {
+                            var model = new this.collection.model;
+                            model.set(this.config.TextField, data.rslt.name);
+                            model.set(this.config.ParentKey, $(data.rslt.parent).attr('Id'));
+
+                            $(this.root).find(data.rslt.obj).remove();
+                            if (this.config.Events) {
+                                if (this.config.Events.BeforeCreate) {
+                                    this.config.Events.BeforeCreate({ model: model, name: data.rslt.name, element: data.rslt.obj, parent: data.rslt.parent });
+                                }
+                            }
+
+                            model.save({}, {
+                                success: _.bind(function (response) {
+                                    console.log('[/jsui/tree.jstree/create] - Saving is a success', response);
+                                    this.trigger('CreateItem', { model: model });
+
+                                    if (this.config.Events) {
+                                        if (this.config.Events.Expand) {
+                                            this.config.Events.Expand($(data.rslt.parent).attr('Id'), this.collection);
+                                        }
+
+                                    }
+                                }, this)
+                            });
+
+                            //this.collection.add(model);
+
+
+                        }
+                    }, this)).bind("remove.jstree", _.bind(function (e, data) {
+                        console.log("remove node", { e: e, data: data });
+                        var id = $(data.rslt.obj).attr('Id');
+                        if (id) {
+                            var model = this.collection.get(id);
+                            this.collection.remove(id);
+                            this.collection.commit({ success: function () { } });
+                        }
+
+
+                    }, this)).bind("rename.jstree", _.bind(function (e, data) {
+                        console.log("rename node", e, data);
+                        var id = $(data.args[0]).attr('Id');
+                        console.log("rename node", { e: e, data: data, id: id });
+                        if (id) {
+                            var model = this.collection.get(id);
+                            model.set(this.config.TextField, data.rslt.new_name);
+                            model.save({}, {
+                                success: function () {
+                                    //TODO ... do something
+                                }
+                            });
+                        }
+
+
+                    }, this)).bind("move_node.jstree", _.bind(function (e, data) {
+                        console.log("move node", { e: e, data: data });
+                        var child = data.rslt.o;
+                        var parent = data.rslt.np;
+                        var childId = $(child).attr('Id');
+                        var parentId = $(parent).attr('Id');
+                        var model = this.collection.get(childId);
+                        model.set(this.config.ParentKey, parentId);
+
+                        console.log("move node", { e: e, data: data, child: child, parent: parent, model: model, childId: childId, parentId: parentId });
+                        model.save({}, {
+                            success: function () {
+                                //TODO ... do something
+                            }
+                        });
+                    }, this));
+
             },
             OnAfterRender: function () {
 
 
             },
             OnDataChange: function (model) {
+                console.log("DATACHANGE");
                 //var id = model.get(this.config.PrimaryKey);
                 //if (this.nodes[id]) {
                 //    if (this.config.TextField) {
@@ -52,107 +173,12 @@
                 //}
             },
             OnDataAdd: function (model) {
-
-                $(this.root).jstree("create",
-                    model.get('Id'),
-                    function () { //success
-
-                    },
-                    true
-                );
-                //  var model.Parent
-                //var id = model.get(this.config.PrimaryKey);
-                //var parentid = model.get(this.config.ParentKey);
-                //if (this.nodes[id]) {
-
-                //    this.OnDataChange(model);
-                //    return;
-                //} else {
-                //    var newnode = $('<li class="ui-menu-item"><a href="javascript:;"><span style="float: left" class="ui-icon"></span><span class="text"></span></a> <ul style="display:none"></ul> </li>');
-                //    newnode.Text = $(newnode).find('span.text');
-                //    newnode.Icon = $(newnode).find('span.ui-icon');
-                //    newnode.Children = $(newnode).find('ul');
-                //    newnode.expanded = false;
-                //    console.log("[jsui/Tree/OnDataAdd]", { NewNode: newnode, Text: newnode.Text, Children: newnode.Children });
-                //    if (this.config.TextField) {
-
-                //        // $(newnode.Text)[0].lastChild.data = model.get(this.config.TextField);
-                //        $(newnode.Text).text( model.get(this.config.TextField));
-                //        $(newnode.Icon).click(_.bind(function () {
-                //            if (!this.node.expanded) {
-                //                this.tree.collection.GetChildren({
-                //                    data: {
-                //                        ParentItem: this.node.NodeID,
-                //                        Application: app.Data.System.GetCurrentApplicationId()
-                //                    }, success: _.bind(function () {
-                //                        $(this.node.Children).show();
-                //                        if (this.tree.config.theme) {
-                //                            if (this.tree.config.theme.close) {
-                //                                $(this.node.Icon).removeClass(this.tree.config.theme.open);
-                //                            }
-                //                            if (this.tree.config.theme.open) {
-                //                                $(this.node.Icon).addClass(this.tree.config.theme.open);
-                //                            }
-                //                        }
-
-                //                    }, { node: this.node, tree: this.tree })
-                //                });
-                //                this.node.expanded = true;
-                //            } else {
-                //                $(this.node.Children).hide();
-                //                if (this.tree.config.theme) {
-                //                    if (this.tree.config.theme.close) {
-                //                        $(this.node.Icon).addClass(this.tree.config.theme.open);
-                //                    }
-                //                    if (this.tree.config.theme.open) {
-                //                        $(this.node.Icon).removeClass(this.tree.config.theme.open);
-                //                    }
-                //                }
-                //                this.node.expanded = false;
-                //            }
-                //        }, { node: newnode, tree: this }));
-                //        if (this.config.Editable) {
-
-                //            $(newnode.Text).editable( _.bind(function (value, settings) {
-                //                //var cid = $(this).parent().attr('data-modelcid');
-                //                this.node.model.set(this.tree.config.TextField, value);
-                //                this.node.model.save();
-                //                return (value);
-                //            },{tree: this, node: newnode}), {
-                //                type: 'text',
-                //                cancel: 'X',
-                //                submit: 'Save'
-                //            });
-                //        }
-
-                //    }
-
-                //    // $(newnode).append('<div style="clear: both">&nbsp;</div>');
-                //    newnode.NodeID = id;
-                //    newnode.ParentNodeID = parentid;
-                //    newnode.model = model;
-                //    this.nodes[id] = newnode;
-                //    if (this.nodes[parentid]) {
-                //        $(this.nodes[parentid].Children).show();
-                //        console.log("[jsui/Tree/OnDataAdd/AppendToParent]", { Parent: this.nodes[parentid], Children: this.nodes[parentid].Children, Node: this.nodes[id] });
-                //        $(this.nodes[parentid].Children).append(this.nodes[id]);
-                //    } else {
-                //        console.log("[jsui/Tree/OnDataAdd/AppendToRoot]", { root: this.root, Node: this.nodes[id] });
-                //        $(this.root).append(this.nodes[id]);
-                //    }
-
-
-
-                //}
-
-
+                $(this.root).jstree("create", "#" + model.get(this.config.ParentKey), false, { attr: { Id: model.get(this.config.PrimaryKey) }, state: "closed", data: { title: model.get(this.config.TextField) } }, function () { }, true);
+                $(this.root).find(".jstree-loading").parent().remove();
             },
             OnDataRemove: function (model) {
-                //var id = model.get(this.config.PrimaryKey);
-                //if (this.nodes[id]) {
-                //    $(this.nodes[id]).remove();
-                //    delete this.nodes[id];
-                //}
+                $(this.root).jstree("remove", "#" + model.get(this.config.PrimaryKey));
+
             },
             OnDispose: function () {
 
