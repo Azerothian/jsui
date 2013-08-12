@@ -1,4 +1,4 @@
-﻿define(['underscore', 'backbone', 'jsui/Control', 'jquery'],
+﻿define(['underscore', 'backbone', './Control', 'jquery'],
     function (_, Backbone, Control, $) {
         return Control.extend({
          

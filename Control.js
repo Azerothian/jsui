@@ -1,7 +1,7 @@
 ﻿
 function GenerateGuid(a, b) { for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a ^ 15 ? 8 ^ Math.random() * (a ^ 20 ? 16 : 4) : 4).toString(16) : ''); return b };
 //Control
-define(['underscore', 'backbone', 'jsui/models/Basic', 'jquery', 'backbone.courier', 'Backbone.ModelBinder/Backbone.ModelBinder', 'jquery-ui'],
+define(['underscore', 'backbone', './models/Basic', 'jquery', 'Backbone.ModelBinder/Backbone.ModelBinder', 'jquery-ui'],
     function (_, Backbone, BasicModel, $) {
 
     
