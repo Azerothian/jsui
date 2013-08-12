@@ -2,7 +2,7 @@
     function (_, Backbone, Control, $) {
         return Control.extend({
             dataTable: {},
-            collection: {},
+           // collection: {},
             editable: false,
             //getCollection: function() {},
             columns: [],
@@ -224,9 +224,11 @@
             },
             Refresh: function () {
                 $(this.body).html('');
-                this.collection.each(function (model) {
-                    this.AddRow(model);
-                }, this);
+                if (this.collection) {
+                    this.collection.each(function (model) {
+                        this.AddRow(model);
+                    }, this);
+                }
             },
             AddRow: function (model) {
                 if (this.rows[model.cid]) {

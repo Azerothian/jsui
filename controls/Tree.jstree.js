@@ -41,25 +41,12 @@
 
                     switch (data.func) {
                         case "open_node":
-                            //   {
-                            //                    data: {
-                            //                        ParentItem: this.node.NodeID,
-                            //                        Application: 
-                            //                    }, success: _.bind(function () {
                             if (this.config.Events) {
                                 if (this.config.Events.Expand) {
                                     this.config.Events.Expand($(data.args[0]).attr("Id"), this.collection);
                                 }
-
                             }
-
-                            //console.log("Open node", { e: e, data: data });
                             break;
-                            //   case "save_selected":
-
-
-                            //       break;
-
                     }
                 }, this))
                     .jstree({
@@ -163,7 +150,7 @@
 
             },
             OnDataChange: function (model) {
-                console.log("DATACHANGE");
+              //  console.log("DATACHANGE");
                 //var id = model.get(this.config.PrimaryKey);
                 //if (this.nodes[id]) {
                 //    if (this.config.TextField) {

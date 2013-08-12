@@ -38,7 +38,10 @@
             Update: function () {
                 
                 if (this.config.Key) {
-                    this.DataSource.set(this.config.Key, JSON.stringify(this.editor.get()));
+                    var object = this.editor.get();
+                    if (this.config.Stringify)
+                        object = JSON.stringify(object)
+                    this.DataSource.set(this.config.Key, object);
                    // this.DataSource.set(this.config.Key, this.editor.get());
                 } else {
                     //THROW ERROR
