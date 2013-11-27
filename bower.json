@@ -5,4 +5,8 @@
     "type": "git",
     "url": "git://github.com/azerothian/jsui.git"
   }
+  "dependencies": {
+    "jquery": "*",
+    "bluebird": "*"
+  }
 }

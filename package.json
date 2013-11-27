@@ -1,0 +1,23 @@
+{
+  "name": "jsui",
+  "version": "0.3.0",
+  "engine": "node >= 0.10",
+  "private": false,
+  "scripts": {
+    "test": "grunt test --verbose"
+  },
+  "dependencies": {
+
+  },
+  "devDependencies": {
+    "grunt-cli": "*",
+    "grunt": "*",
+    "grunt-shell": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-plato": "*",
+    "grunt-install-dependencies": "*"
+  }
+}

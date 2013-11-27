@@ -1,0 +1,69 @@
+{   
+    # Project's human readable name
+    title: "jsui" 
+
+    # Project slug name
+    name: "jsui"
+
+    # Project GitHub repository full name
+    # If `repository` is set, or if `homepage` is a GitHub URL, we set this automatically
+    repo: "Azerothian/jsui"
+
+    # Project's homepage URL
+    # If `repo`, `repository`, or `demo` is set, we set this automatically
+    homepage: "https://github.com/Azerothian/jsui"
+
+    # Project's demo URL
+    # If `homepage` or  is set, we set this automatically
+    demo: "https://github.com/Azerothian/jsui"
+
+    # Project description
+    description: "The purpose of nodes is to provide a dynamic and easy to use content management system, using a module/control (layout and sublayouts) base system to dynamically assemble webpages and provides drag n drop type functionality."
+
+    # Project keywords
+    # Can be an array or CSV string
+    keywords: "coffeescript,javascript,jquery,jquery ui"
+
+    # Project's author details
+    # Can be an array or CSV string
+    authors: ["Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"]
+    author: null
+
+    # Maintainers
+    # Can be an array or CSV string
+    maintainers: ["Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"]
+    maintainer: null
+
+    # Sponsors
+    # Can be an array or CSV string
+    sponsors: ["Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"]
+
+    # Contributors
+    # Pulled in automatically from the GitHub Repository API and the GitHub Repository's `package.json` file
+    contributors: null
+
+    # Project's license details
+    # Can be an array or CSV string
+    license: {type:"GPLv2", url:"http://choosealicense.com/licenses/gpl-v2/"}
+    licenses: null
+
+    # Project's repository details
+    # If `repo` is set, or if `homepage` is a GitHub URL, we set this automatically
+    repository:
+        type: "git"
+        url: "https://github.com/Azerothian/jsui.git"
+
+    # Project's repository details
+    # If `repo` is set, or if `homepage` is a GitHub URL, we set this automatically
+    bugs:
+        url: "https://github.com/Azerothian/jsui/issues"
+
+    # Project's badges for use in the readme files
+    badges:
+        travis: true
+        npm: false
+        gittip: false
+        #flattr: "344188/balupton-on-Flattr"
+        #paypal: "QB8GQPZAH84N6"
+
+}
