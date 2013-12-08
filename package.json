@@ -7,7 +7,7 @@
     "test": "grunt test --verbose"
   },
   "dependencies": {
-
+    "json5": "*"
   },
   "devDependencies": {
     "grunt-cli": "*",
@@ -19,5 +19,24 @@
     "grunt-contrib-watch": "*",
     "grunt-plato": "*",
     "grunt-install-dependencies": "*"
+  },
+  "description": "The purpose of jsui is to provide control based environment for building web applications",
+  "keywords": [
+    "coffeescript",
+    "javascript",
+    "jquery",
+    "jquery ui"
+  ],
+  "author": "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)",
+  "maintainers": [
+    "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"
+  ],
+  "contributors": [],
+  "bugs": {
+    "url": "https://github.com/Azerothian/jsui/issues"
+  },
+  "license": {
+    "type": "GPLv2",
+    "url": "http://choosealicense.com/licenses/gpl-v2/"
   }
 }

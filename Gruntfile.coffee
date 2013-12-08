@@ -31,6 +31,7 @@ module.exports = (grunt) ->
         files:
           'report/': ['build/**/*.js']
 
+          
     shell: 
       codo: 
         options:
@@ -53,4 +54,4 @@ module.exports = (grunt) ->
   grunt.registerTask 'clear', 'Clears all files from the build directory.', [ 'clean' ]
   grunt.registerTask 'init', 'Compiles all of the assets and copies the files to the build directory.', [ 'build', 'doc' ]
   grunt.registerTask 'build', 'Builds the application', [ 'install-dependencies', 'clean', 'copy', 'coffee' ]
-  grunt.registerTask 'doc', 'Builds the application documentation', [ 'plato', 'shell:projectz', 'shell:codo' ]
+  grunt.registerTask 'doc', 'Builds the application documentation', [ 'plato', 'shell:codo' ]

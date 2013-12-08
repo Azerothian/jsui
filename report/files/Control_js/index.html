@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">76.41</p>
+      <p class="stat">71.87</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">48</p>
+      <p class="stat">130</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">18.50</p>
+      <p class="stat">44.87</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">0.39</p>
+      <p class="stat">1.38</p>
     </div>
   </div>
 </div>
@@ -93,16 +93,24 @@
     <textarea id="file-source" class="col-md-12">(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  define([&#039;./Model&#039;, &#039;bluebird&#039;], function(Model) {
+  define([&#039;./Model&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;bluebird&#039;], function(Model, Promises, Util, Promise) {
     var Control;
     Control = (function() {
       function Control() {
+        this.dispose = __bind(this.dispose, this);
+        this.renderFinished = __bind(this.renderFinished, this);
+        this.renderChildren = __bind(this.renderChildren, this);
+        this.getLengthOfChildren = __bind(this.getLengthOfChildren, this);
+        this.render = __bind(this.render, this);
         this.removeChild = __bind(this.removeChild, this);
         this.addChild = __bind(this.addChild, this);
+        var newGuid;
         this.model = new Model();
         this.parent = null;
         this.children = [];
         this.isRendered = false;
+        newGuid = Util.GenerateGuid();
+        this.model.set(&quot;Id&quot;, newGuid);
       }
 
       Control.prototype.addChild = function(child) {
@@ -114,7 +122,9 @@
           child.model.set(&quot;ParentId&quot;, _this.model.get(&quot;Id&quot;));
           child.parent = _this;
           _this.children[child.model.get(&quot;Id&quot;)] = child;
+          console.log(&quot;Control - addChild - finished adding&quot;, _this.children.length, _this.children);
           if (_this.isRendered) {
+            console.log(&quot;Control - addChild - render&quot;);
             return child.render().then(resolve, reject);
           } else {
             return resolve();
@@ -125,9 +135,81 @@
       Control.prototype.removeChild = function(id) {
         var _this = this;
         return new Promise(function(resolve, reject) {
-          if (children[id] == null) {
+          if (_this.children[id] == null) {
             return reject(&quot;Child id not found in the children collection&quot;);
           }
+          delete _this.children[id];
+          return resolve();
+        });
+      };
+
+      Control.prototype.render = function() {
+        var _this = this;
+        return new Promise(function(resolve, reject) {
+          var promises;
+          promises = new Promises();
+          if (_this[&quot;OnInit&quot;] != null) {
+            promises.push(_this[&quot;OnInit&quot;], _this, [&quot;OnInit&quot;]);
+          }
+          if (_this[&quot;OnRender&quot;] != null) {
+            promises.push(_this[&quot;OnRender&quot;], _this, [&quot;OnRender&quot;]);
+          }
+          promises.push(_this.renderChildren, _this, [&quot;renderChildren&quot;]);
+          promises.push(_this.renderFinished, _this, [&quot;renderFinished&quot;]);
+          console.log(&quot;Control: Render&quot;, promises.length);
+          return promises.chain().then(function() {
+            console.log(&quot;Control - Finished Rendering&quot;);
+            return resolve();
+          }, reject).caught(function() {
+            return console.log(arguments);
+          });
+        });
+      };
+
+      Control.prototype.getLengthOfChildren = function() {
+        return Util.getLengthOfObject(this.children);
+      };
+
+      Control.prototype.renderChildren = function() {
+        var _this = this;
+        return new Promise(function(resolve, reject) {
+          var child, childrenLength, promises;
+          childrenLength = _this.getLengthOfChildren();
+          console.log(&quot;Control: renderChildren&quot;, childrenLength);
+          promises = new Promises();
+          for (child in _this.children) {
+            promises.push(_this.children[child].render, _this.children[child]);
+          }
+          return promises.chain().then(resolve, reject);
+        });
+      };
+
+      Control.prototype.renderFinished = function() {
+        var _this = this;
+        return new Promise(function(resolve, reject) {
+          console.log(&quot;Control: renderFinished&quot;);
+          _this.isRendered = true;
+          return resolve();
+        });
+      };
+
+      Control.prototype.dispose = function() {
+        var _this = this;
+        return new Promise(function(resolve, reject) {
+          var child, promises, _i, _len, _ref;
+          promises = new Promises();
+          _ref = _this.children;
+          for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+            child = _ref[_i];
+            promises.push(child.dispose, child);
+          }
+          if (_this[&quot;OnDispose&quot;] != null) {
+            promises.push(_this[&quot;OnDispose&quot;], _this);
+          }
+          return promises.chain().then(function() {
+            _this.isRendered = false;
+            return resolve();
+          }, reject);
         });
       };
 

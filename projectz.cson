@@ -18,7 +18,7 @@
     demo: "https://github.com/Azerothian/jsui"
 
     # Project description
-    description: "The purpose of nodes is to provide a dynamic and easy to use content management system, using a module/control (layout and sublayouts) base system to dynamically assemble webpages and provides drag n drop type functionality."
+    description: "The purpose of jsui is to provide control based environment for building web applications"
 
     # Project keywords
     # Can be an array or CSV string
@@ -60,7 +60,7 @@
 
     # Project's badges for use in the readme files
     badges:
-        travis: true
+        travis: false
         npm: false
         gittip: false
         #flattr: "344188/balupton-on-Flattr"
