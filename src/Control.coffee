@@ -9,7 +9,6 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
       @parent = null;
       @children = []
       @isRendered = false
-      
       newGuid = Util.GenerateGuid();
       @model.set("Id", newGuid);
 
@@ -23,9 +22,9 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
         child.parent = @;
         #child.setModel("Name", name);
         @children[child.model.get("Id")] = child;
-        console.log "Control - addChild - finished adding", @children.length, @children
+        #console.log "Control - addChild - finished adding", @children.length, @children
         if @isRendered
-          console.log "Control - addChild - render"
+          #console.log "Control - addChild - render"
           return child.render().then(resolve, reject);
         else 
           return resolve();
@@ -47,10 +46,10 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
         promises.push @renderChildren, @, ["renderChildren"]
         promises.push @renderFinished, @, ["renderFinished"]
 
-        console.log("Control: Render", promises.length);
+        #console.log("Control: Render", promises.length);
 
         return promises.chain().then(() =>
-          console.log("Control - Finished Rendering");
+          #console.log("Control - Finished Rendering");
           return resolve();
         ,reject)
         .caught () =>
@@ -61,7 +60,7 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
     renderChildren: () =>
       return new Promise (resolve, reject) =>
         childrenLength = @getLengthOfChildren();
-        console.log("Control: renderChildren" ,childrenLength);
+       # console.log("Control: renderChildren" ,childrenLength);
         promises = new Promises();
         for child of @children
           promises.push @children[child].render, @children[child]
@@ -69,7 +68,7 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
         
     renderFinished: () =>
       return new Promise (resolve, reject) =>
-        console.log("Control: renderFinished");
+        #console.log("Control: renderFinished");
         @isRendered = true;
         return resolve();
     

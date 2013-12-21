@@ -13,7 +13,7 @@ define ['jquery','./html', 'bluebird', '../util','../lib/promises' ], ($, Html, 
           return resolve();
     @loadControlsFromObject: (obj, parent = null, primary = null) =>
       return new Promise (resolve, reject) =>
-        console.log "Loading control", obj;
+        #console.log "Loading control", obj;
         if Util.isArray(obj)
           if not primary? or not parent?
             return reject("loadControlsFromObject - Error: primary control not set when using array as base");
@@ -24,17 +24,20 @@ define ['jquery','./html', 'bluebird', '../util','../lib/promises' ], ($, Html, 
         return requirejs [controlType], (control) =>
          
           args = obj.Parameters || [];
-          console.log "Processing control constructor", { obj: obj, args: args };
+          #console.log "Processing control constructor", { obj: obj, args: args };
           newControl = control.bind.apply control, args;
           c = new newControl();
           for prop of obj
-            if prop isnt "Children"
-              c.model.set(prop, obj[prop]); 
-          if not primary?
+            # if prop isnt "Children"
+            c.model.set(prop, obj[prop]); 
+          if primary?
+            #console.log 'PRIMARY IS SET', primary;
+          else
+            #console.log 'PRIMARY IS NOT SET'
             primary = c;
           Name = c.model.get("Name");
           if Name? #not sure but will see
-            console.log "SETTING RAWRS", primary,  c, Name
+            #console.log "SETTING RAWRS", primary,  c, Name
             primary[Name] = c;
           if parent?
             return parent.addChild(c).then () =>

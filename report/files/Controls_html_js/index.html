@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">68.77</p>
+      <p class="stat">69.27</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">141</p>
+      <p class="stat">136</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">41.95</p>
+      <p class="stat">43.04</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">1.78</p>
+      <p class="stat">1.66</p>
     </div>
   </div>
 </div>
@@ -118,7 +118,6 @@
           return _this.id = value;
         });
         this.model.on(&quot;Class&quot;, function(value) {
-          console.log(&quot;CLASSS&quot;, value, _this.model);
           return _this.attr(&quot;class&quot;, value);
         });
         this.model.on(&quot;Name&quot;, function(value) {
@@ -195,14 +194,11 @@
       Html.prototype.OnRender = function() {
         var _this = this;
         return new Promise(function(resolve, reject) {
-          console.log(&quot;Html - OnRender - start&quot;);
           if (_this.parent != null) {
             $(_this.parent.el).append(_this.el);
             _this.RefreshProperties();
-            console.log(&quot;Html - OnRender - resolve&quot;);
             return resolve();
           }
-          console.log(&quot;Html - OnRender - reject&quot;);
           return reject();
         });
       };
@@ -217,11 +213,10 @@
 
       Html.prototype.attr = function() {
         if (arguments.length === 1) {
-          $(this.el).attr(arguments[0]);
+          return $(this.el).attr(arguments[0]);
         } else if (arguments.length === 2) {
-          $(this.el).attr(&quot;&quot; + arguments[0], &quot;&quot; + arguments[1]);
+          return $(this.el).attr(&quot;&quot; + arguments[0], &quot;&quot; + arguments[1]);
         }
-        return console.log(&quot;setting attrib&quot;, this.el, &quot;&quot; + arguments[0], &quot;&quot; + arguments[1]);
       };
 
       return Html;

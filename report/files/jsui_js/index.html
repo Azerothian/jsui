@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">80.43</p>
+      <p class="stat">81.80</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">41</p>
+      <p class="stat">38</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">8.90</p>
+      <p class="stat">8.52</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">0.37</p>
+      <p class="stat">0.33</p>
     </div>
   </div>
 </div>
@@ -93,18 +93,16 @@
     <textarea id="file-source" class="col-md-12">(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  define([&#039;jquery&#039;, &#039;bluebird&#039;, &#039;./Control&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;./controls/template&#039;], function($, Promise, Control, Promises, Util, Template) {
+  define([&#039;jquery&#039;, &#039;bluebird&#039;, &#039;./Control&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;./controls/template&#039;], function($, Promise, Control, Promises, util, Template) {
     var jsui;
     jsui = (function() {
       function jsui() {
-        this.loadControlsFromString = __bind(this.loadControlsFromString, this);
         this.initialise = __bind(this.initialise, this);
       }
 
       jsui.prototype.initialise = function(target) {
         var _this = this;
         return new Promise(function(resolve, reject) {
-          console.log(&quot;[jsui] Init root object&quot;, target);
           _this.root = new Control;
           _this.root.el = $(target)[0];
           _this.root.isRendered = true;
@@ -113,11 +111,10 @@
         });
       };
 
-      jsui.prototype.loadControlsFromString = function(text, parent) {
-        var _this = this;
+      jsui.loadControlsFromString = function(text, parent) {
         return new Promise(function(resolve, reject) {
           var obj;
-          obj = Util.jsonToObject(text);
+          obj = util.jsonToObject(text);
           return Template.loadControlsFromObject(obj, parent).then(function(control) {
             return resolve(control);
           });
@@ -126,7 +123,7 @@
 
       return jsui;
 
-    })();
+    }).call(this);
     return jsui;
   });
 

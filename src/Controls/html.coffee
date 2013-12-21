@@ -10,7 +10,7 @@ define ['jquery','../Control', 'bluebird', '../Util' ], ($, Control, Promise, Ut
         @attr("id", value);
         @id = value;
       @model.on "Class", (value) =>
-        console.log("CLASSS", value, @model);
+        #console.log("CLASSS", value, @model);
         @attr("class", value); 
       @model.on "Name", (value) =>
         @attr("name", value); 
@@ -65,13 +65,13 @@ define ['jquery','../Control', 'bluebird', '../Util' ], ($, Control, Promise, Ut
 
     OnRender: () =>
       return new Promise (resolve, reject) =>
-        console.log("Html - OnRender - start");
+        #console.log("Html - OnRender - start");
         if @parent?
           $(@parent.el).append(@el);
           @RefreshProperties();
-          console.log("Html - OnRender - resolve");
+          #console.log("Html - OnRender - resolve");
           return resolve();
-        console.log("Html - OnRender - reject");
+        #console.log("Html - OnRender - reject");
         return reject();
      
 
@@ -85,5 +85,5 @@ define ['jquery','../Control', 'bluebird', '../Util' ], ($, Control, Promise, Ut
         $(@el).attr arguments[0]
       else if arguments.length == 2
         $(@el).attr "#{arguments[0]}", "#{arguments[1]}"
-       console.log "setting attrib", @el, "#{arguments[0]}", "#{arguments[1]}"
+       #console.log "setting attrib", @el, "#{arguments[0]}", "#{arguments[1]}"
   return Html;
