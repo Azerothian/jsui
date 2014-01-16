@@ -14,8 +14,8 @@ module.exports = (grunt) ->
       base:
         src: ["src/**/*.ts"]        #The source typescript files, http://gruntjs.com/configuring-tasks#files
         #html: ["test/work/**/*.tpl.html"], # The source html files, https://github.com/basarat/grunt-ts#html-2-typescript-support
-        reference: "build/reference.ts",  # If specified, generate this file that you can use for your reference management
-        #out: 'test/out.js',             # If specified, generate an out.js file which is the merged js file
+        #reference: "build/reference.ts",  # If specified, generate this file that you can use for your reference management
+        #out: 'build/app.js',             # If specified, generate an out.js file which is the merged js file
         outDir: 'build'                  # If specified, the generate javascript files are placed here. Only works if out is not specified
         #watch: 'src'                     # If specified, watches this directory for changes, and re-runs the current target
         options:                         #use to override the default options, http://gruntjs.com/configuring-tasks#options

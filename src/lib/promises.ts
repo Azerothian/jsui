@@ -6,9 +6,14 @@ class Promises {
 
     promises = [];
     length = 0;
-    constructor(promises?: any[]) {
-        this.promises = promises != null ? promises : [];
-        this.length = promises.length;
+    constructor(promisesArr?: any[]) {
+        if(!promisesArr)
+        {
+            this.promises = [];
+        } else {
+            this.promises = promisesArr;
+        }
+        this.length = this.promises.length;
     }
 
     all = () => {
@@ -65,22 +70,22 @@ class Promises {
 function chainUtil(i: number, array: any[], originalArgs: any, collect?) {
     return new Promise((resolve, reject) => {
         var args;
-        if (!(array != null)) {
+        if (!array) {
             console.log("Promises - chainUtil - array is not defined");
             return;
         }
-        if (!(collect != null)) {
+        if (!collect) {
             collect = [];
         }
-        if (array[i] != null) {
-            if (array[i].args != null) {
+        if (array[i]) {
+            if (array[i].args) {
                 args = array[i].args;
             } else {
                 args = originalArgs;
             }
             return array[i].promise.apply(array[i].context, args).then(function () {
                 collect.push(arguments);
-                return this.chainUtil(i + 1, array, originalArgs, collect).then(resolve, reject);
+                return chainUtil(i + 1, array, originalArgs, collect).then(resolve, reject);
             });
         } else {
             return resolve(collect);
