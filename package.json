@@ -15,7 +15,8 @@
     "grunt-shell": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-clean": "*",
-    "grunt-contrib-coffee": "*",
+    "coffee-script": "*",
+    "grunt-ts": "*",
     "grunt-contrib-watch": "*",
     "grunt-plato": "*",
     "grunt-install-dependencies": "*"

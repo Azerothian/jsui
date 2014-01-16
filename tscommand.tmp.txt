@@ -1,0 +1,1 @@
+"src/jsui.ts" "src/lib/promises.ts" --sourcemap --declaration --removeComments --target ES3 --module amd --outDir build
