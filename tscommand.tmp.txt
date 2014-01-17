@@ -1,1 +1,1 @@
-"src/jsui.ts" "src/lib/promises.ts" --sourcemap --declaration --removeComments --target ES3 --module amd --outDir build
+"src/control.ts" "src/controls/html.ts" "src/controls/template.ts" "src/jsui.ts" "src/lib/promises.ts" "src/model.ts" --sourcemap --declaration --removeComments --target ES3 --module amd --outDir build

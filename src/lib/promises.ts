@@ -2,9 +2,16 @@
 
 import Promise = require('bluebird');
 
-class Promises {
+    interface PromisesEntry
+    {
+        promise: Promise;
+        context: any;
+        args: any[];
+    }
 
-    promises = [];
+class PromisesArray {
+
+    promises:any[];
     length = 0;
     constructor(promisesArr?: any[]) {
         if(!promisesArr)
@@ -93,4 +100,4 @@ function chainUtil(i: number, array: any[], originalArgs: any, collect?) {
     });
 }
 
- export = Promises
+ export = PromisesArray

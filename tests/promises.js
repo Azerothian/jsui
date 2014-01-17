@@ -33,9 +33,11 @@ requirejs([
         return new Promise(
         function(resolve, reject) { 
             console.log(i); 
-            for(var x = 0; x < i * 10; x++)
+            
+            var s = 0;
+            for(var x = 0; x < i * 1000; x++)
             {
-
+                s++;
             }
             return resolve(); 
         })

@@ -37,7 +37,7 @@
 
 <div class="jumbotron">
   <div class="container">
-    <h1>lib/promises.js</h1>
+    <h1>control.js</h1>
   </div>
 </div>
 
@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">71.17</p>
+      <p class="stat">75.22</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">92</p>
+      <p class="stat">95</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">46.74</p>
+      <p class="stat">31.94</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">0.78</p>
+      <p class="stat">0.92</p>
     </div>
   </div>
 </div>
@@ -90,99 +90,102 @@
 
 <div class="container">
   <div class="row">
-    <textarea id="file-source" class="col-md-12">define([&quot;require&quot;, &quot;exports&quot;, &#039;bluebird&#039;], function(require, exports, Promise) {
-    var PromisesArray = (function () {
-        function PromisesArray(promisesArr) {
+    <textarea id="file-source" class="col-md-12">define([&quot;require&quot;, &quot;exports&quot;, &quot;bluebird&quot;, &quot;./lib/promises&quot;, &quot;./model&quot;], function(require, exports, Promise, Promises, Model) {
+    var Control = (function () {
+        function Control() {
             var _this = this;
-            this.length = 0;
-            this.all = function () {
+            this.model = new Model();
+            this.children = [];
+            this.isRendered = false;
+            this.addChild = function (child) {
                 return new Promise(function (resolve, reject) {
-                    var args, arrs, i, _i, _len, _ref;
-                    arrs = [];
-                    _ref = _this.promises;
-                    for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
-                        i = _ref[_i];
-                        args = i.args || arguments;
-                        arrs.push(i.promise.apply(i.context, args));
+                    if (child.model.get(&quot;Id&quot;) == _this.model.get(&quot;Id&quot;)) {
+                        return reject(&quot;Cannot add same control to itself&quot;);
                     }
-                    return Promise.all(arrs).then(function () {
+                    child.model.set(&quot;ParentId&quot;, _this.model.get(&quot;Id&quot;));
+                    child.parent = _this;
+                    _this.children[child.model.get(&quot;Id&quot;)] = child;
+
+                    if (_this.isRendered) {
+                        return child.render().then(resolve, reject);
+                    } else {
                         return resolve();
-                    });
+                    }
                 });
             };
-            this.add = function (promise, context, args) {
-                if (!(promise != null)) {
-                    throw &quot;Promises - Error: promise being provided is not valid&quot;;
-                }
-                _this.promises.push({
-                    promise: promise,
-                    context: context,
-                    args: args
+            this.removeChild = function (id) {
+                return new Promise(function (resolve, reject) {
+                    if (!_this.children[id]) {
+                        return reject(&quot;Child id not found in the children collection&quot;);
+                    }
+                    delete _this.children[id];
+                    return resolve();
                 });
-                return _this.length = _this.promises.length;
             };
-            this.push = function (promise, context, args) {
-                return _this.add(promise, context, args);
+            this.render = function () {
+                return new Promise(function (resolve, reject) {
+                    var promises = new Promises();
+                    if (_this[&quot;OnInit&quot;]) {
+                        promises.push(_this[&quot;OnInit&quot;], _this, [&quot;OnInit&quot;]);
+                    }
+                    if (_this[&quot;OnRender&quot;]) {
+                        promises.push(_this[&quot;OnRender&quot;], _this, [&quot;OnRender&quot;]);
+                    }
+                    promises.push(_this.renderChildren, _this, [&quot;renderChildren&quot;]);
+                    promises.push(_this.renderFinished, _this, [&quot;renderFinished&quot;]);
+
+                    return promises.chain().then(function () {
+                        return resolve();
+                    }, reject);
+                }).catch(function () {
+                    console.log(arguments);
+                });
             };
-            this.concat = function () {
-                var i, _i, _len, _results;
-                _results = [];
-                for (_i = 0, _len = arguments.length; _i &lt; _len; _i++) {
-                    i = arguments[_i];
-                    _results.push(_this.promises.concat(i));
-                }
-                return _results;
+            this.renderChildren = function () {
+                return new Promise(function (resolve, reject) {
+                    var childrenLength = _this.children.length;
+                    var promises = new Promises();
+                    for (var child in _this.children) {
+                        promises.push(_this.children[child].render, _this.children[child]);
+                    }
+                    return promises.chain().then(resolve, reject);
+                });
             };
-            this.getAll = function () {
-                return _this.promises;
+            this.renderFinished = function () {
+                return new Promise(function (resolve, reject) {
+                    _this.isRendered = true;
+                    return resolve();
+                });
             };
-            this.clear = function () {
-                _this.promises = [];
-                return _this.length = 0;
+            this.dispose = function () {
+                return new Promise(function (resolve, reject) {
+                    var promises = new Promises();
+                    for (var child in _this.children) {
+                        promises.push(child.dispose, child);
+                    }
+                    if (_this[&quot;OnDispose&quot;]) {
+                        promises.push(_this[&quot;OnDispose&quot;], _this);
+                    }
+                    return promises.chain().then(function () {
+                        _this.isRendered = false;
+                        return resolve();
+                    }, reject);
+                });
             };
-            this.chain = function () {
-                return chainUtil(0, this.promises, arguments);
-            };
-            if (!promisesArr) {
-                this.promises = [];
-            } else {
-                this.promises = promisesArr;
-            }
-            this.length = this.promises.length;
+            var newGuid = GenerateGuid();
+            this.model.set(&quot;Id&quot;, newGuid);
         }
-        return PromisesArray;
+        return Control;
     })();
-    ;
-    function chainUtil(i, array, originalArgs, collect) {
-        return new Promise(function (resolve, reject) {
-            var args;
-            if (!array) {
-                console.log(&quot;Promises - chainUtil - array is not defined&quot;);
-                return;
-            }
-            if (!collect) {
-                collect = [];
-            }
-            if (array[i]) {
-                if (array[i].args) {
-                    args = array[i].args;
-                } else {
-                    args = originalArgs;
-                }
-                return array[i].promise.apply(array[i].context, args).then(function () {
-                    collect.push(arguments);
-                    return chainUtil(i + 1, array, originalArgs, collect).then(resolve, reject);
-                });
-            } else {
-                return resolve(collect);
-            }
-        });
+
+    function GenerateGuid() {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
     }
 
     
-    return PromisesArray;
+    return Control;
 });
-//# sourceMappingURL=promises.js.map</textarea>
+//# sourceMappingURL=control.js.map</textarea>
   </div>
 </div>
 

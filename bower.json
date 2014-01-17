@@ -8,7 +8,8 @@
   "dependencies": {
     "requirejs": "*",
     "jquery": "*",
-    "bluebird": "*"
+    "bluebird": "*",
+    "eventEmitter": "*"
   },
   "devDependencies": {
   }
