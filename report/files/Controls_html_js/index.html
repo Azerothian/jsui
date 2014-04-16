@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title></title>
+  <title>Plato - controls/html.js</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
@@ -26,7 +26,7 @@
 
 <div class="navbar navbar-fixed-top">
   <div class="container">
-    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
     <ul class="nav navbar-nav">
       <li>
         <a href="../../index.html">Report Home</a>
@@ -37,19 +37,19 @@
 
 <div class="jumbotron">
   <div class="container">
-    <h1>Controls/html.js</h1>
+    <h1>controls/html.js</h1>
   </div>
 </div>
 
 <div class="container aggregate-stats">
   <div class="row">
     <div class="col-md-6">
-      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">69.27</p>
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.61</p>
     </div>
     <div class="col-md-6">
-      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">136</p>
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">184</p>
     </div>
   </div>
   <div class="row historical">
@@ -62,12 +62,12 @@
   </div>
   <div class="row">
     <div class="col-md-6">
-      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">43.04</p>
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">47.46</p>
     </div>
     <div class="col-md-6">
-      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">1.66</p>
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.15</p>
     </div>
   </div>
 </div>
@@ -78,11 +78,11 @@
   </div>
   <div class="row">
     <div class="col-md-6">
-      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
       <div id="fn-by-complexity" class="stat"></div>
     </div>
     <div class="col-md-6">
-      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
       <div id="fn-by-sloc" class="stat"></div>
     </div>
   </div>
@@ -101,11 +101,12 @@
       __extends(Html, _super);
 
       function Html(tagName) {
-        var _this = this;
         this.tagName = tagName != null ? tagName : &quot;div&quot;;
+        this.html = __bind(this.html, this);
         this.attr = __bind(this.attr, this);
         this.css = __bind(this.css, this);
         this.OnRender = __bind(this.OnRender, this);
+        this.SetEvents = __bind(this.SetEvents, this);
         this.RefreshProperties = __bind(this.RefreshProperties, this);
         this.setTag = __bind(this.setTag, this);
         this.setAttributes = __bind(this.setAttributes, this);
@@ -113,30 +114,40 @@
         Html.__super__.constructor.apply(this, arguments);
         this.el = $(&quot;&lt;&quot; + this.tagName + &quot;&gt;&lt;/&quot; + this.tagName + &quot;&gt;&quot;);
         this.attr(&quot;id&quot;, this.model.get(&quot;Id&quot;));
-        this.model.on(&quot;Id&quot;, function(value) {
-          _this.attr(&quot;id&quot;, value);
-          return _this.id = value;
-        });
-        this.model.on(&quot;Class&quot;, function(value) {
-          return _this.attr(&quot;class&quot;, value);
-        });
-        this.model.on(&quot;Name&quot;, function(value) {
-          _this.attr(&quot;name&quot;, value);
-          return _this.Name = value;
-        });
+        this.model.on(&quot;Id&quot;, (function(_this) {
+          return function(value) {
+            _this.attr(&quot;id&quot;, value);
+            return _this.id = value;
+          };
+        })(this));
+        this.model.on(&quot;Class&quot;, (function(_this) {
+          return function(value) {
+            return _this.attr(&quot;class&quot;, value);
+          };
+        })(this));
+        this.model.on(&quot;Name&quot;, (function(_this) {
+          return function(value) {
+            _this.attr(&quot;name&quot;, value);
+            return _this.Name = value;
+          };
+        })(this));
         this.model.on(&quot;Style&quot;, this.setStyles);
         this.model.on(&quot;Attributes&quot;, this.setAttributes);
         this.model.on(&quot;TagName&quot;, this.setTag);
-        this.model.on(&quot;Text&quot;, function(value) {
-          if (_this.el != null) {
-            return $(_this.el).text(value);
-          }
-        });
-        this.model.on(&quot;Html&quot;, function(value) {
-          if (_this.el != null) {
-            return $(_this.el).html(value);
-          }
-        });
+        this.model.on(&quot;Text&quot;, (function(_this) {
+          return function(value) {
+            if (_this.el != null) {
+              return $(_this.el).text(value);
+            }
+          };
+        })(this));
+        this.model.on(&quot;Html&quot;, (function(_this) {
+          return function(value) {
+            if (_this.el != null) {
+              return $(_this.el).html(value);
+            }
+          };
+        })(this));
       }
 
       Html.prototype.setStyles = function(styles) {
@@ -168,7 +179,7 @@
       };
 
       Html.prototype.RefreshProperties = function() {
-        var cc, html, id, name, text;
+        var cc, html, id, name, targetControl, text;
         html = this.model.get(&#039;Html&#039;);
         if (html != null) {
           $(this.el).html(html);
@@ -187,20 +198,49 @@
         }
         cc = this.model.get(&#039;Class&#039;);
         if (cc != null) {
-          return this.attr(&#039;class&#039;, cc);
+          this.attr(&#039;class&#039;, cc);
+        }
+        targetControl = this.model.get(&quot;MasterControl&quot;);
+        if (targetControl != null) {
+          return this.getParentByName(targetControl).then((function(_this) {
+            return function(MasterControl) {
+              _this.MasterControl = MasterControl;
+              if (_this.MasterControl != null) {
+                return _this.SetEvents(_this.MasterControl);
+              } else {
+                return _this.SetEvents(_this);
+              }
+            };
+          })(this));
+        }
+      };
+
+      Html.prototype.SetEvents = function() {
+        var click, fuc;
+        click = this.model.get(&quot;OnClick&quot;);
+        if (click != null) {
+          fuc = (function(_this) {
+            return function(context) {
+              return _this.MasterControl[click](context);
+            };
+          })(this);
+          return $(this.el).click(function() {
+            return fuc(this);
+          });
         }
       };
 
       Html.prototype.OnRender = function() {
-        var _this = this;
-        return new Promise(function(resolve, reject) {
-          if (_this.parent != null) {
-            $(_this.parent.el).append(_this.el);
-            _this.RefreshProperties();
-            return resolve();
-          }
-          return reject();
-        });
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            if (_this.parent != null) {
+              $(_this.parent.el).append(_this.el);
+              _this.RefreshProperties();
+              return resolve();
+            }
+            return reject();
+          };
+        })(this));
       };
 
       Html.prototype.css = function() {
@@ -216,6 +256,14 @@
           return $(this.el).attr(arguments[0]);
         } else if (arguments.length === 2) {
           return $(this.el).attr(&quot;&quot; + arguments[0], &quot;&quot; + arguments[1]);
+        }
+      };
+
+      Html.prototype.html = function() {
+        if (arguments.length === 1) {
+          return $(this.el).html(arguments[0]);
+        } else {
+          return $(this.el).html();
         }
       };
 
