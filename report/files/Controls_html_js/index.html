@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">71.61</p>
+      <p class="stat">69.99</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">184</p>
+      <p class="stat">226</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">47.46</p>
+      <p class="stat">58.65</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">2.15</p>
+      <p class="stat">2.73</p>
     </div>
   </div>
 </div>
@@ -95,13 +95,16 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define([&#039;jquery&#039;, &#039;../Control&#039;, &#039;bluebird&#039;, &#039;../Util&#039;], function($, Control, Promise, Util) {
+  define([&#039;jquery&#039;, &#039;../Control&#039;, &#039;bluebird&#039;, &#039;../lib/Promises&#039;, &#039;../Util&#039;, &#039;log&#039;], function($, Control, Promise, Promises, Util, log) {
     var Html;
     Html = (function(_super) {
       __extends(Html, _super);
 
-      function Html(tagName) {
+      function Html(jsui, tagName) {
+        this.jsui = jsui;
         this.tagName = tagName != null ? tagName : &quot;div&quot;;
+        this.findValidators = __bind(this.findValidators, this);
+        this.fireValidation = __bind(this.fireValidation, this);
         this.html = __bind(this.html, this);
         this.attr = __bind(this.attr, this);
         this.css = __bind(this.css, this);
@@ -179,7 +182,7 @@
       };
 
       Html.prototype.RefreshProperties = function() {
-        var cc, html, id, name, targetControl, text;
+        var cc, html, id, name, text;
         html = this.model.get(&#039;Html&#039;);
         if (html != null) {
           $(this.el).html(html);
@@ -200,33 +203,27 @@
         if (cc != null) {
           this.attr(&#039;class&#039;, cc);
         }
-        targetControl = this.model.get(&quot;MasterControl&quot;);
-        if (targetControl != null) {
-          return this.getParentByName(targetControl).then((function(_this) {
-            return function(MasterControl) {
-              _this.MasterControl = MasterControl;
-              if (_this.MasterControl != null) {
-                return _this.SetEvents(_this.MasterControl);
-              } else {
-                return _this.SetEvents(_this);
-              }
-            };
-          })(this));
+        if (this.primary != null) {
+          return this.SetEvents(this.primary);
+        } else {
+          return this.SetEvents(this);
         }
       };
 
-      Html.prototype.SetEvents = function() {
+      Html.prototype.SetEvents = function(target) {
         var click, fuc;
         click = this.model.get(&quot;OnClick&quot;);
         if (click != null) {
-          fuc = (function(_this) {
-            return function(context) {
-              return _this.MasterControl[click](context);
-            };
-          })(this);
-          return $(this.el).click(function() {
-            return fuc(this);
-          });
+          if (target[click] != null) {
+            fuc = (function(_this) {
+              return function(context) {
+                return target[click](context);
+              };
+            })(this);
+            return $(this.el).click(function() {
+              return fuc(this);
+            });
+          }
         }
       };
 
@@ -265,6 +262,51 @@
         } else {
           return $(this.el).html();
         }
+      };
+
+      Html.prototype.fireValidation = function(validationGroup) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var validators;
+            validators = _this.findValidators(validationGroup);
+            return validators.chain().then(function() {
+              return resolve();
+            }, function(results) {
+              var i, r, result, _i, _j, _len, _len1;
+              result = [];
+              for (_i = 0, _len = results.length; _i &lt; _len; _i++) {
+                i = results[_i];
+                for (_j = 0, _len1 = i.length; _j &lt; _len1; _j++) {
+                  r = i[_j];
+                  result.push(r);
+                }
+              }
+              return reject(result);
+            });
+          };
+        })(this));
+      };
+
+      Html.prototype.findValidators = function(validationGroup, current) {
+        var childName, i, results, validators, _i, _len, _ref;
+        if (current == null) {
+          current = this;
+        }
+        validators = new Promises();
+        if (current != null) {
+          for (childName in current.children) {
+            results = this.findValidators(validationGroup, current.children[childName]);
+            _ref = results.promises;
+            for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+              i = _ref[_i];
+              validators.promises.push(i);
+            }
+          }
+          if (current.OnValidation != null) {
+            validators.push(current.OnValidation, current, [validationGroup]);
+          }
+        }
+        return validators;
       };
 
       return Html;

@@ -7,7 +7,7 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
 		constructor: () ->
 			@model = new Model()
 			@parent = null;
-			@children = []
+			@children = {}
 			@isRendered = false
 			newGuid = Util.GenerateGuid();
 			@model.set("Id", newGuid);

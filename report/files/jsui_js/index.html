@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">81.92</p>
+      <p class="stat">73.89</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">41</p>
+      <p class="stat">154</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">8.87</p>
+      <p class="stat">43.30</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">0.34</p>
+      <p class="stat">1.55</p>
     </div>
   </div>
 </div>
@@ -91,43 +91,156 @@
 <div class="container">
   <div class="row">
     <textarea id="file-source" class="col-md-12">(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var jsui_context,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  define([&#039;jquery&#039;, &#039;bluebird&#039;, &#039;./Control&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;./controls/template&#039;], function($, Promise, Control, Promises, util, Template) {
+  jsui_context = null;
+
+  define([&#039;jquery&#039;, &#039;underscore&#039;, &#039;bluebird&#039;, &#039;./Control&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;./controls/template&#039;], function($, _, Promise, Control, Promises, Util, Template) {
     var jsui;
+    if (jsui_context != null) {
+      return jsui_context;
+    }
     jsui = (function() {
       function jsui() {
-        this.initialise = __bind(this.initialise, this);
+        this.loadChildren = __bind(this.loadChildren, this);
+        this.childCheck = __bind(this.childCheck, this);
+        this.loadControlsFromObject = __bind(this.loadControlsFromObject, this);
+        this.loadControlsFromString = __bind(this.loadControlsFromString, this);
+        this.createRootFromSelector = __bind(this.createRootFromSelector, this);
+        this.getPrimaryControl = __bind(this.getPrimaryControl, this);
+        this.setControlBaseObject = __bind(this.setControlBaseObject, this);
+        this.primaryControls = {};
+        this.roots = [];
+        this.ioc = {};
       }
 
-      jsui.prototype.initialise = function(target) {
+      jsui.prototype.setControlBaseObject = function(ioc) {
+        this.ioc = ioc != null ? ioc : {};
+      };
+
+      jsui.prototype.getPrimaryControl = function(name) {
+        return this.primaryControls[name];
+      };
+
+      jsui.prototype.createRootFromSelector = function(target) {
         return new Promise((function(_this) {
           return function(resolve, reject) {
-            _this.root = new Control;
-            _this.root.el = $(target)[0];
-            _this.root.isRendered = true;
-            $(target).attr(&#039;id&#039;, _this.root.model.get(&quot;Id&quot;));
+            var root;
+            root = new Control;
+            root.el = $(target)[0];
+            root.isRendered = true;
+            $(target).attr(&#039;id&#039;, root.model.get(&quot;Id&quot;));
+            _this.roots.push(root);
+            return resolve(root);
+          };
+        })(this));
+      };
+
+      jsui.prototype.loadControlsFromString = function(text, parent) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var obj;
+            obj = Util.jsonToObject(text);
+            return _this.loadControlsFromObject(obj, parent).then(function(control) {
+              return resolve(control);
+            });
+          };
+        })(this));
+      };
+
+      jsui.prototype.loadControlsFromObject = function(obj, parent, primary) {
+        if (parent == null) {
+          parent = null;
+        }
+        if (primary == null) {
+          primary = null;
+        }
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var controlType;
+            if (Util.isArray(obj)) {
+              if ((primary == null) || (parent == null)) {
+                return reject(&quot;loadControlsFromObject - Error: primary control not set when using array as base&quot;);
+              }
+              return _this.loadChildren(parent, obj, primary).then(function() {
+                return resolve(primary);
+              });
+            }
+            controlType = obj.Control || &quot;jsui/controls/html&quot;;
+            return requirejs([controlType], function(control) {
+              var Name, args, c, newControl, primaryName, prop;
+              args = obj.Parameters || [];
+              newControl = control.bind.apply(control, args);
+              c = new newControl();
+              _.extend(c, _this.ioc);
+              for (prop in obj) {
+                c.model.set(prop, obj[prop]);
+              }
+              if (primary == null) {
+                primary = c;
+              }
+              c.primary = primary;
+              primaryName = primary.model.get(&quot;Name&quot;);
+              if (primaryName != null) {
+                if (_this.primaryControls[primaryName] == null) {
+                  _this.primaryControls[primaryName] = primary;
+                }
+              }
+              Name = c.model.get(&quot;Name&quot;);
+              if (Name != null) {
+                primary[Name] = c;
+              }
+              if (parent != null) {
+                return parent.addChild(c).then(function() {
+                  return _this.childCheck(obj, c, primary).then(function() {
+                    return resolve(c);
+                  }, reject);
+                }, reject);
+              } else {
+                return _this.childCheck(obj, c, primary).then(function() {
+                  return resolve(c);
+                }, reject);
+              }
+            });
+          };
+        })(this));
+      };
+
+      jsui.prototype.childCheck = function(obj, control, primary) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            if (obj.Children != null) {
+              return _this.loadChildren(control, obj.Children, primary).then(function() {
+                return resolve();
+              }, reject);
+            }
             return resolve();
           };
         })(this));
       };
 
-      jsui.loadControlsFromString = function(text, parent) {
-        return new Promise(function(resolve, reject) {
-          var obj;
-          obj = util.jsonToObject(text);
-          return Template.loadControlsFromObject(obj, parent).then(function(control) {
-            return resolve(control);
-          });
-        });
+      jsui.prototype.loadChildren = function(parent, children, primary) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var child, promises, _i, _len;
+            promises = new Promises();
+            for (_i = 0, _len = children.length; _i &lt; _len; _i++) {
+              child = children[_i];
+              promises.push(_this.loadControlsFromObject, _this, [child, parent, primary]);
+            }
+            return promises.chain().then(function(results) {
+              return resolve();
+            });
+          };
+        })(this));
       };
-
-      jsui.prototype.loadControlsFromString = jsui.loadControlsFromString;
 
       return jsui;
 
     })();
-    return jsui;
+    jsui_context = new jsui;
+    return jsui_context;
   });
 
 }).call(this);</textarea>

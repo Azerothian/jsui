@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">72.72</p>
+      <p class="stat">70.95</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">110</p>
+      <p class="stat">131</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">64.14</p>
+      <p class="stat">61.47</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.02</p>
+      <p class="stat">1.19</p>
     </div>
   </div>
 </div>
@@ -93,7 +93,7 @@
     <textarea id="file-source" class="col-md-12">(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  define([&#039;bluebird&#039;], function(Promise) {
+  define([&#039;bluebird&#039;, &#039;log&#039;], function(Promise, log) {
     var Promises;
     Promises = (function() {
       function Promises(promises) {
@@ -138,8 +138,8 @@
         return this.length = this.promises.length;
       };
 
-      Promises.prototype.push = function(promise, context, args) {
-        return this.add(promise, context, args);
+      Promises.prototype.push = function() {
+        return this.add.apply(this, arguments);
       };
 
       Promises.prototype.concat = function() {
@@ -162,15 +162,18 @@
       };
 
       Promises.prototype.chain = function() {
-        return Promises.chainUtil(0, this.promises, arguments);
+        return this.chainUtil(0, this.promises, arguments);
       };
 
-      Promises.chainUtil = function(i, array, originalArgs, collect) {
+      Promises.prototype.chainUtil = function(i, array, originalArgs, collect, rejected) {
+        if (rejected == null) {
+          rejected = false;
+        }
         return new Promise((function(_this) {
           return function(resolve, reject) {
-            var args;
+            var OnComplete, OnReject, args;
             if (array == null) {
-              console.log(&quot;Promises - chainUtil - array is not defined&quot;);
+              log(&quot;Promises - chainUtil - array is not defined&quot;);
               return;
             }
             if (collect == null) {
@@ -182,12 +185,30 @@
               } else {
                 args = originalArgs;
               }
-              return array[i].promise.apply(array[i].context, args).then(function() {
+              OnComplete = function() {
+                var rj, rs;
                 collect.push(arguments);
-                return _this.chainUtil(i + 1, array, originalArgs, collect).then(resolve, reject);
-              });
+                rs = resolve;
+                if (_this.onResolve != null) {
+                  rs = _this.onResolve(resolve);
+                }
+                rj = reject;
+                if (_this.onReject != null) {
+                  rj = _this.onReject(reject);
+                }
+                return _this.chainUtil(i + 1, array, originalArgs, collect, rejected).then(rs, rj);
+              };
+              OnReject = function() {
+                rejected = true;
+                return OnComplete.apply(_this, arguments);
+              };
+              return array[i].promise.apply(array[i].context, args).then(OnComplete, OnReject);
             } else {
-              return resolve(collect);
+              if (rejected) {
+                return reject(collect);
+              } else {
+                return resolve(collect);
+              }
             }
           };
         })(this));

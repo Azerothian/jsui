@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">74.49</p>
+      <p class="stat">78.05</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">112</p>
+      <p class="stat">36</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">35.50</p>
+      <p class="stat">16.96</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.09</p>
+      <p class="stat">0.36</p>
     </div>
   </div>
 </div>
@@ -95,7 +95,7 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define([&#039;jquery&#039;, &#039;./html&#039;, &#039;bluebird&#039;, &#039;../util&#039;, &#039;../lib/promises&#039;], function($, Html, Promise, Util, Promises) {
+  define([&#039;jquery&#039;, &#039;./html&#039;, &#039;bluebird&#039;, &#039;../util&#039;, &#039;../lib/promises&#039;, &#039;jsui&#039;], function($, Html, Promise, Util, Promises, jsui) {
     var Template;
     Template = (function(_super) {
       __extends(Template, _super);
@@ -109,7 +109,7 @@
         return new Promise((function(_this) {
           return function(resolve, reject) {
             if (_this.elements != null) {
-              return Template.loadControlsFromObject(_this.elements, _this, _this).then(function() {
+              return jsui.loadControlsFromObject(_this.elements, _this, _this).then(function() {
                 return resolve();
               });
             } else {
@@ -117,82 +117,6 @@
             }
           };
         })(this));
-      };
-
-      Template.loadControlsFromObject = function(obj, parent, primary) {
-        if (parent == null) {
-          parent = null;
-        }
-        if (primary == null) {
-          primary = null;
-        }
-        return new Promise(function(resolve, reject) {
-          var controlType;
-          if (Util.isArray(obj)) {
-            if ((primary == null) || (parent == null)) {
-              return reject(&quot;loadControlsFromObject - Error: primary control not set when using array as base&quot;);
-            }
-            return Template.loadChildren(parent, obj, primary).then(function() {
-              return resolve(primary);
-            });
-          }
-          controlType = obj.Control || &quot;jsui/controls/html&quot;;
-          return requirejs([controlType], function(control) {
-            var Name, args, c, newControl, prop;
-            args = obj.Parameters || [];
-            newControl = control.bind.apply(control, args);
-            c = new newControl();
-            for (prop in obj) {
-              c.model.set(prop, obj[prop]);
-            }
-            if (primary != null) {
-
-            } else {
-              primary = c;
-            }
-            Name = c.model.get(&quot;Name&quot;);
-            if (Name != null) {
-              primary[Name] = c;
-            }
-            if (parent != null) {
-              return parent.addChild(c).then(function() {
-                return Template.childCheck(obj, c, primary).then(function() {
-                  return resolve(c);
-                }, reject);
-              }, reject);
-            } else {
-              return Template.childCheck(obj, c, primary).then(function() {
-                return resolve(c);
-              }, reject);
-            }
-          });
-        });
-      };
-
-      Template.childCheck = function(obj, control, primary) {
-        return new Promise(function(resolve, reject) {
-          if (obj.Children != null) {
-            return Template.loadChildren(control, obj.Children, primary).then(function() {
-              return resolve();
-            }, reject);
-          } else {
-            return resolve();
-          }
-        });
-      };
-
-      Template.loadChildren = function(parent, children, primary) {
-        return new Promise(function(resolve, reject) {
-          var child, promises, _i, _len;
-          promises = new Promises();
-          for (_i = 0, _len = children.length; _i &lt; _len; _i++) {
-            child = children[_i];
-            promises.push(Template.loadControlsFromObject, Template, [child, parent, primary]);
-          }
-          return promises.chain().then(function(results) {
-            return resolve();
-          });
-        });
       };
 
       return Template;

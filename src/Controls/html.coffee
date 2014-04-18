@@ -1,7 +1,7 @@
 
-define ['jquery','../Control', 'bluebird', '../Util' ], ($, Control, Promise, Util) ->
+define ['jquery','../Control', 'bluebird','../lib/Promises', '../Util', 'log' ], ($, Control, Promise, Promises, Util, log) ->
 	class Html extends Control
-		constructor: (@tagName = "div") ->
+		constructor: (@jsui, @tagName = "div") ->
 			super #always call this when overriding the constructor, while extending a object;
 			@el = $("<#{@tagName}></#{@tagName}>");
 			
@@ -63,24 +63,33 @@ define ['jquery','../Control', 'bluebird', '../Util' ], ($, Control, Promise, Ut
 			if cc?
 				@attr 'class', cc;
 
-			targetControl = @model.get "MasterControl"
 
-			if targetControl?
-				return @getParentByName(targetControl).then (@MasterControl) =>
-					if @MasterControl?
-						@SetEvents(@MasterControl);
-					else 
-						@SetEvents(@);
+			if @primary?
+				@SetEvents(@primary);
+			else
+				@SetEvents(@);
+			
+			#targetControl = @model.get "MasterControl"
+
+			#if targetControl?
+			#	return @getParentByName(targetControl).then (@MasterControl) =>
+			#		if @MasterControl?
+			#			@SetEvents(@MasterControl);
+			#		else 
+			#			@SetEvents(@);
 
 
 
-		SetEvents: () =>
+		SetEvents: (target) =>
 			click = @model.get "OnClick"
 			if click?
-				fuc = (context) =>
-					@MasterControl[click](context);
-				$(@el).click () ->
-					fuc(this);
+				if target[click]?
+					fuc = (context) =>
+						target[click](context);
+					$(@el).click () ->
+						fuc(this);
+#			else
+#				console.log "not found"
 					
 
 		OnRender: () =>
@@ -110,5 +119,29 @@ define ['jquery','../Control', 'bluebird', '../Util' ], ($, Control, Promise, Ut
 				$(@el).html arguments[0]
 			else 
 				return $(@el).html();
-			 #console.log "setting attrib", @el, "#{arguments[0]}", "#{arguments[1]}"
+
+		fireValidation: (validationGroup) =>
+			return new Promise (resolve, reject) =>
+				validators = @findValidators(validationGroup);
+				return validators.chain().then () =>
+					return resolve();
+				, (results) =>
+					result = [];
+					for i in results
+						for r in i
+							result.push r;
+					return reject(result);
+
+		findValidators: (validationGroup, current = @) =>
+			validators = new Promises()
+			if current?
+				for childName of current.children
+					results = @findValidators validationGroup, current.children[childName]
+					for i in results.promises
+						validators.promises.push i;
+				if current.OnValidation?
+					validators.push current.OnValidation, current, [validationGroup]
+			return validators;
+
+
 	return Html;
