@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">69.99</p>
+      <p class="stat">69.27</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">226</p>
+      <p class="stat">277</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">58.65</p>
+      <p class="stat">70.29</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">2.73</p>
+      <p class="stat">3.36</p>
     </div>
   </div>
 </div>
@@ -103,6 +103,8 @@
       function Html(jsui, tagName) {
         this.jsui = jsui;
         this.tagName = tagName != null ? tagName : &quot;div&quot;;
+        this.OnDispose = __bind(this.OnDispose, this);
+        this.getAllControlsWithValidators = __bind(this.getAllControlsWithValidators, this);
         this.findValidators = __bind(this.findValidators, this);
         this.fireValidation = __bind(this.fireValidation, this);
         this.html = __bind(this.html, this);
@@ -114,6 +116,8 @@
         this.setTag = __bind(this.setTag, this);
         this.setAttributes = __bind(this.setAttributes, this);
         this.setStyles = __bind(this.setStyles, this);
+        this.hide = __bind(this.hide, this);
+        this.show = __bind(this.show, this);
         Html.__super__.constructor.apply(this, arguments);
         this.el = $(&quot;&lt;&quot; + this.tagName + &quot;&gt;&lt;/&quot; + this.tagName + &quot;&gt;&quot;);
         this.attr(&quot;id&quot;, this.model.get(&quot;Id&quot;));
@@ -130,8 +134,7 @@
         })(this));
         this.model.on(&quot;Name&quot;, (function(_this) {
           return function(value) {
-            _this.attr(&quot;name&quot;, value);
-            return _this.Name = value;
+            return _this.attr(&quot;name&quot;, value);
           };
         })(this));
         this.model.on(&quot;Style&quot;, this.setStyles);
@@ -152,6 +155,18 @@
           };
         })(this));
       }
+
+      Html.prototype.show = function() {
+        if ($(this.el).hasClass(&#039;hidden&#039;)) {
+          return $(this.el).removeClass(&#039;hidden&#039;);
+        }
+      };
+
+      Html.prototype.hide = function() {
+        if (!$(this.el).hasClass(&#039;hidden&#039;)) {
+          return $(this.el).addClass(&#039;hidden&#039;);
+        }
+      };
 
       Html.prototype.setStyles = function(styles) {
         var s, _results;
@@ -211,19 +226,26 @@
       };
 
       Html.prototype.SetEvents = function(target) {
-        var click, fuc;
-        click = this.model.get(&quot;OnClick&quot;);
-        if (click != null) {
-          if (target[click] != null) {
-            fuc = (function(_this) {
-              return function(context) {
-                return target[click](context);
-              };
-            })(this);
-            return $(this.el).click(function() {
-              return fuc(this);
-            });
+        var fuc, func, onFuncs, targetFunc, _results;
+        onFuncs = this.model.get(&quot;On&quot;);
+        if (onFuncs != null) {
+          _results = [];
+          for (func in onFuncs) {
+            targetFunc = onFuncs[func];
+            if (target[targetFunc] != null) {
+              fuc = (function(_this) {
+                return function(context) {
+                  return target[targetFunc](context);
+                };
+              })(this);
+              _results.push($(this.el).on(func, function() {
+                return fuc(this);
+              }));
+            } else {
+              _results.push(void 0);
+            }
           }
+          return _results;
         }
       };
 
@@ -307,6 +329,35 @@
           }
         }
         return validators;
+      };
+
+      Html.prototype.getAllControlsWithValidators = function(validationGroup, current) {
+        var childName, i, results, validators, _i, _len;
+        if (current == null) {
+          current = this;
+        }
+        validators = [];
+        if (current != null) {
+          for (childName in current.children) {
+            results = this.getAllControlsWithValidators(validationGroup, current.children[childName]);
+            for (_i = 0, _len = results.length; _i &lt; _len; _i++) {
+              i = results[_i];
+              validators.push(i);
+            }
+          }
+          if (current.OnValidation != null) {
+            validators.push(current);
+          }
+        }
+        return validators;
+      };
+
+      Html.prototype.OnDispose = function() {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            return $(_this.el).remove().promise().done(resolve);
+          };
+        })(this));
       };
 
       return Html;

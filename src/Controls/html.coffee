@@ -14,7 +14,6 @@ define ['jquery','../Control', 'bluebird','../lib/Promises', '../Util', 'log' ],
 				@attr("class", value); 
 			@model.on "Name", (value) =>
 				@attr("name", value); 
-				@Name = value;
 
 			@model.on "Style", @setStyles
 			@model.on "Attributes", @setAttributes
@@ -24,9 +23,18 @@ define ['jquery','../Control', 'bluebird','../lib/Promises', '../Util', 'log' ],
 				if @el?
 					$(@el).text(value);
 			@model.on "Html", (value) =>
+				#log "Html - set - html", value;
 				if @el?
 					$(@el).html(value);
 			
+
+
+		show: () =>
+			if $(@el).hasClass('hidden')
+				$(@el).removeClass('hidden');
+		hide: () =>
+			if not $(@el).hasClass('hidden')
+				$(@el).addClass('hidden');
 
 		
 		setStyles: (styles) =>
@@ -78,19 +86,16 @@ define ['jquery','../Control', 'bluebird','../lib/Promises', '../Util', 'log' ],
 			#		else 
 			#			@SetEvents(@);
 
-
-
 		SetEvents: (target) =>
-			click = @model.get "OnClick"
-			if click?
-				if target[click]?
-					fuc = (context) =>
-						target[click](context);
-					$(@el).click () ->
-						fuc(this);
-#			else
-#				console.log "not found"
-					
+			onFuncs = @model.get "On";
+			if onFuncs?
+				for func of onFuncs
+					targetFunc = onFuncs[func]
+					if target[targetFunc]?
+						fuc = (context) =>
+							target[targetFunc](context);
+						$(@el).on func, () ->
+							fuc(this);
 
 		OnRender: () =>
 			return new Promise (resolve, reject) =>
@@ -132,6 +137,7 @@ define ['jquery','../Control', 'bluebird','../lib/Promises', '../Util', 'log' ],
 							result.push r;
 					return reject(result);
 
+
 		findValidators: (validationGroup, current = @) =>
 			validators = new Promises()
 			if current?
@@ -143,5 +149,17 @@ define ['jquery','../Control', 'bluebird','../lib/Promises', '../Util', 'log' ],
 					validators.push current.OnValidation, current, [validationGroup]
 			return validators;
 
-
+		getAllControlsWithValidators: (validationGroup, current = @) =>
+			validators = []
+			if current?
+				for childName of current.children
+					results = @getAllControlsWithValidators validationGroup, current.children[childName]
+					for i in results
+						validators.push i;
+				if current.OnValidation?
+					validators.push current;
+			return validators;
+		OnDispose: () =>
+			return new Promise (resolve, reject) =>
+				$(@el).remove().promise().done resolve;
 	return Html;

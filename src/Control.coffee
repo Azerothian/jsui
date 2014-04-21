@@ -1,6 +1,19 @@
 
 
-define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Util, Promise) ->
+define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promises, Util, Promise, log) ->
+	class Paths
+		constructor: (@control) ->
+
+		getAllParents: () =>
+			parent = @control.parent;
+			data = []
+
+			loop
+				break if not parent?
+				data.push parent;
+				parent = parent.parent
+
+			return data;
 
 	class Control
 		
@@ -9,10 +22,38 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
 			@parent = null;
 			@children = {}
 			@isRendered = false
-			newGuid = Util.GenerateGuid();
-			@model.set("Id", newGuid);
+			@createId();
+			@model.on "Name", (value) =>
+				@Name = value;
+				@createId(value);
 
-							
+
+			@paths = new Paths(@); 
+
+		getId: () =>
+			id = model.get "Id";
+			if not id?
+				return @createId();	
+			return id;
+
+		createId: (name = @Name) =>
+			id = @model.get "Id"
+			if name?
+				realid = "";
+				parents = @paths.getAllParents();
+				
+				for parent in parents
+					if parent.Name?
+						realid = "#{parent.Name}_#{realid}";
+				realid = "#{realid}#{name}";
+				@model.set "Id", realid;
+
+				return realid;
+			else if not id?
+				id = Util.GenerateGuid();
+				@model.set "Id", id
+			return id;
+				
 
 		addChild: (child) =>
 			return new Promise (resolve, reject) =>
@@ -20,8 +61,10 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
 					return reject("Cannot add same control to itself");
 				child.model.set "ParentId", @model.get("Id");
 				child.parent = @;
+				child.createId();
 				#child.setModel("Name", name);
 				@children[child.model.get("Id")] = child;
+
 				#console.log "Control - addChild - finished adding", @children.length, @children
 				if @isRendered
 					#console.log "Control - addChild - render"
@@ -82,7 +125,16 @@ define ['./Model','./lib/Promises', './Util', 'bluebird'], (Model, Promises, Uti
 				#console.log("Control: renderFinished");
 				@isRendered = true;
 				return resolve();
-		
+		clearChildren: () =>
+			return new Promise (resolve, reject) =>
+				promises = new Promises();
+				for child in @children
+					promises.push child.clearChildren, child
+					promises.push child.dispose, child
+					promises.push child.removeChild, child, [child]
+				return promises.chain().then () =>
+					return resolve();
+
 		dispose: () =>
 			return new Promise (resolve, reject) =>
 				promises = new Promises();

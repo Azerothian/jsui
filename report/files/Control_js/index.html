@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">74.36</p>
+      <p class="stat">71.70</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">151</p>
+      <p class="stat">236</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">52.32</p>
+      <p class="stat">77.13</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.50</p>
+      <p class="stat">2.39</p>
     </div>
   </div>
 </div>
@@ -93,11 +93,35 @@
     <textarea id="file-source" class="col-md-12">(function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  define([&#039;./Model&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;bluebird&#039;], function(Model, Promises, Util, Promise) {
-    var Control;
+  define([&#039;./Model&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;bluebird&#039;, &#039;log&#039;], function(Model, Promises, Util, Promise, log) {
+    var Control, Paths;
+    Paths = (function() {
+      function Paths(control) {
+        this.control = control;
+        this.getAllParents = __bind(this.getAllParents, this);
+      }
+
+      Paths.prototype.getAllParents = function() {
+        var data, parent;
+        parent = this.control.parent;
+        data = [];
+        while (true) {
+          if (parent == null) {
+            break;
+          }
+          data.push(parent);
+          parent = parent.parent;
+        }
+        return data;
+      };
+
+      return Paths;
+
+    })();
     Control = (function() {
       function Control() {
         this.dispose = __bind(this.dispose, this);
+        this.clearChildren = __bind(this.clearChildren, this);
         this.renderFinished = __bind(this.renderFinished, this);
         this.renderChildren = __bind(this.renderChildren, this);
         this.getLengthOfChildren = __bind(this.getLengthOfChildren, this);
@@ -105,14 +129,55 @@
         this.removeChild = __bind(this.removeChild, this);
         this.getParentByName = __bind(this.getParentByName, this);
         this.addChild = __bind(this.addChild, this);
-        var newGuid;
+        this.createId = __bind(this.createId, this);
+        this.getId = __bind(this.getId, this);
         this.model = new Model();
         this.parent = null;
         this.children = {};
         this.isRendered = false;
-        newGuid = Util.GenerateGuid();
-        this.model.set(&quot;Id&quot;, newGuid);
+        this.createId();
+        this.model.on(&quot;Name&quot;, (function(_this) {
+          return function(value) {
+            _this.Name = value;
+            return _this.createId(value);
+          };
+        })(this));
+        this.paths = new Paths(this);
       }
+
+      Control.prototype.getId = function() {
+        var id;
+        id = model.get(&quot;Id&quot;);
+        if (id == null) {
+          return this.createId();
+        }
+        return id;
+      };
+
+      Control.prototype.createId = function(name) {
+        var id, parent, parents, realid, _i, _len;
+        if (name == null) {
+          name = this.Name;
+        }
+        id = this.model.get(&quot;Id&quot;);
+        if (name != null) {
+          realid = &quot;&quot;;
+          parents = this.paths.getAllParents();
+          for (_i = 0, _len = parents.length; _i &lt; _len; _i++) {
+            parent = parents[_i];
+            if (parent.Name != null) {
+              realid = &quot;&quot; + parent.Name + &quot;_&quot; + realid;
+            }
+          }
+          realid = &quot;&quot; + realid + name;
+          this.model.set(&quot;Id&quot;, realid);
+          return realid;
+        } else if (id == null) {
+          id = Util.GenerateGuid();
+          this.model.set(&quot;Id&quot;, id);
+        }
+        return id;
+      };
 
       Control.prototype.addChild = function(child) {
         return new Promise((function(_this) {
@@ -122,6 +187,7 @@
             }
             child.model.set(&quot;ParentId&quot;, _this.model.get(&quot;Id&quot;));
             child.parent = _this;
+            child.createId();
             _this.children[child.model.get(&quot;Id&quot;)] = child;
             if (_this.isRendered) {
               return child.render().then(resolve, reject);
@@ -209,6 +275,25 @@
           return function(resolve, reject) {
             _this.isRendered = true;
             return resolve();
+          };
+        })(this));
+      };
+
+      Control.prototype.clearChildren = function() {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var child, promises, _i, _len, _ref;
+            promises = new Promises();
+            _ref = _this.children;
+            for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+              child = _ref[_i];
+              promises.push(child.clearChildren, child);
+              promises.push(child.dispose, child);
+              promises.push(child.removeChild, child, [child]);
+            }
+            return promises.chain().then(function() {
+              return resolve();
+            });
           };
         })(this));
       };
