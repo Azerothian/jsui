@@ -117,7 +117,7 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 				return @getScriptTagContents(scriptTag).then (json) =>
 					newElement = $('<div></div>');
 					newContent = $(scriptTag).replaceWith(newElement);
-					log "ui", @;
+					#log "ui", @;
 					return @createRootFromSelector(newElement).then (root) =>
 						return @loadControlsFromString(json, root).then resolve, reject;		
 

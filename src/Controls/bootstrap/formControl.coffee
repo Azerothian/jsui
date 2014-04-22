@@ -66,10 +66,10 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 					#log "start ALL"
 					return validators.chain()
 						.then (results) =>
-							log "formTextBox - OnValidation - resolve", arguments
+							#log "formTextBox - OnValidation - resolve", arguments
 							return resolve();
 						, (results) =>
-							log "formTextBox - OnValidation - reject", arguments
+							#log "formTextBox - OnValidation - reject", arguments
 							if results
 								vResult = { messages: [], target: @Input, control: @ };	
 								for r in results
