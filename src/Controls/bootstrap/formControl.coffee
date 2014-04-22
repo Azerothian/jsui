@@ -56,7 +56,7 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 
 					for ruleName of rules
 						rule = rules[ruleName]
-						log "rule - #{ruleName}", rule
+						log "rule #{@model.get 'Name'}",  rule
 						switch rule.type 
 							when "required" then validators.push @OnValidationRequired, @, [rule]
 							when "email" then validators.push @OnValidationEmail, @, [rule]
@@ -65,10 +65,10 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 					#log "start ALL"
 					return validators.chain()
 						.then (results) =>
-							#log "formTextBox - OnValidation - resolve", arguments
+							log "formTextBox - OnValidation - resolve", arguments
 							return resolve();
 						, (results) =>
-							#log "formTextBox - OnValidation - reject", arguments
+							log "formTextBox - OnValidation - reject", arguments
 							if results
 								vResult = { messages: [], target: @Input, control: @ };	
 								for r in results
@@ -82,8 +82,6 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 		OnValidationRequired: (rule) =>
 			return new Promise (resolve, reject) =>
 				text = @getText();
-				name = @model.get 'Name';
-				#log "OnValidationRequired - text: #{text} - #{name}"
 				if text is ''
 					return @OnValidationFailed(rule, reject);
 				return resolve();
@@ -99,12 +97,16 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 		
 		OnValidationCompare: (rule) =>
 			return new Promise (resolve, reject) =>
-				emailPattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-				text = @getText();
-				#log "formTextBox - OnValidationEmail", text.match emailPattern
-				if not text.match emailPattern
+				log 'formControl - OnValidationCompare';
+				target = @primary[rule.targetControl].getText()
+				text = @getText()
+				log 'formControl - OnValidationCompare', text, target;
+				if target is text
+					log 'formControl - OnValidationCompare - success', text, target;
+					return resolve();	
+				else 
+					log 'formControl - OnValidationCompare - failed', text, target;
 					return @OnValidationFailed(rule, reject);
-				return resolve();	
 		OnValidationCustom: (rule) =>
 			return new Promise (resolve, reject) =>
 				text = @getText();

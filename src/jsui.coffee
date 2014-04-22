@@ -8,9 +8,9 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 			@primaryControls = {};
 			@roots = []
 			@ioc = {}
-			@createRootFromSelector('body').then (@root) =>
+			#@createRootFromSelector('body').then (@root) =>
 
-		initMainRoot: (selector) =>
+		initMainRoot: (selector = 'body') =>
 			return new Promise (resolve, reject) =>
 				return @createRootFromSelector(selector).then (@root) =>
 					return resolve();
