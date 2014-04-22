@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">73.89</p>
+      <p class="stat">75.87</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">154</p>
+      <p class="stat">241</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">43.30</p>
+      <p class="stat">54.07</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.55</p>
+      <p class="stat">2.57</p>
     </div>
   </div>
 </div>
@@ -96,7 +96,7 @@
 
   jsui_context = null;
 
-  define([&#039;jquery&#039;, &#039;underscore&#039;, &#039;bluebird&#039;, &#039;./Control&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;./controls/template&#039;], function($, _, Promise, Control, Promises, Util, Template) {
+  define([&#039;jquery&#039;, &#039;underscore&#039;, &#039;bluebird&#039;, &#039;./Control&#039;, &#039;./lib/Promises&#039;, &#039;./Util&#039;, &#039;./controls/template&#039;, &#039;log&#039;], function($, _, Promise, Control, Promises, Util, Template, log) {
     var jsui;
     if (jsui_context != null) {
       return jsui_context;
@@ -105,18 +105,44 @@
       function jsui() {
         this.loadChildren = __bind(this.loadChildren, this);
         this.childCheck = __bind(this.childCheck, this);
+        this.createScriptTag = __bind(this.createScriptTag, this);
+        this.getScriptTagContents = __bind(this.getScriptTagContents, this);
+        this.processScriptTags = __bind(this.processScriptTags, this);
         this.loadControlsFromObject = __bind(this.loadControlsFromObject, this);
         this.loadControlsFromString = __bind(this.loadControlsFromString, this);
+        this.loadControlsFromJson = __bind(this.loadControlsFromJson, this);
         this.createRootFromSelector = __bind(this.createRootFromSelector, this);
         this.getPrimaryControl = __bind(this.getPrimaryControl, this);
         this.setControlBaseObject = __bind(this.setControlBaseObject, this);
+        this.initMainRoot = __bind(this.initMainRoot, this);
         this.primaryControls = {};
         this.roots = [];
         this.ioc = {};
+        this.createRootFromSelector(&#039;body&#039;).then((function(_this) {
+          return function(root) {
+            _this.root = root;
+          };
+        })(this));
       }
+
+      jsui.prototype.initMainRoot = function(selector) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            return _this.createRootFromSelector(selector).then(function(root) {
+              _this.root = root;
+              return resolve();
+            });
+          };
+        })(this));
+      };
 
       jsui.prototype.setControlBaseObject = function(ioc) {
         this.ioc = ioc != null ? ioc : {};
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            return resolve();
+          };
+        })(this));
       };
 
       jsui.prototype.getPrimaryControl = function(name) {
@@ -137,7 +163,23 @@
         })(this));
       };
 
+      jsui.prototype.loadControlsFromJson = function(path, parent) {
+        if (parent == null) {
+          parent = null;
+        }
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            return requirejs([&quot;text!&quot; + path + &quot;.json&quot;], function(json) {
+              return _this.loadControlsFromString(json, parent).then(resolve, reject);
+            });
+          };
+        })(this));
+      };
+
       jsui.prototype.loadControlsFromString = function(text, parent) {
+        if (parent == null) {
+          parent = null;
+        }
         return new Promise((function(_this) {
           return function(resolve, reject) {
             var obj;
@@ -202,6 +244,51 @@
                   return resolve(c);
                 }, reject);
               }
+            });
+          };
+        })(this));
+      };
+
+      jsui.prototype.processScriptTags = function() {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var context, promises;
+            promises = new Promises();
+            context = _this;
+            return $(&quot;[type=&#039;jsui/json5&#039;]&quot;).each(function() {
+              return promises.push(context.createScriptTag, context, [this]);
+            }).promise().done(function() {
+              return promises.chain().then(resolve, reject);
+            });
+          };
+        })(this));
+      };
+
+      jsui.prototype.getScriptTagContents = function(scriptTag) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var jsonsrc;
+            jsonsrc = $(scriptTag).attr(&quot;json-src&quot;);
+            if (jsonsrc != null) {
+              return requirejs([&quot;text!&quot; + jsonsrc + &quot;.json&quot;], resolve);
+            } else {
+              return resolve($(scriptTag).html());
+            }
+          };
+        })(this));
+      };
+
+      jsui.prototype.createScriptTag = function(scriptTag) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            return _this.getScriptTagContents(scriptTag).then(function(json) {
+              var newContent, newElement;
+              newElement = $(&#039;&lt;div&gt;&lt;/div&gt;&#039;);
+              newContent = $(scriptTag).replaceWith(newElement);
+              log(&quot;ui&quot;, _this);
+              return _this.createRootFromSelector(newElement).then(function(root) {
+                return _this.loadControlsFromString(json, root).then(resolve, reject);
+              });
             });
           };
         })(this));

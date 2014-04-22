@@ -1,5 +1,5 @@
 jsui_context = null;
-define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Util', './controls/template'], ($,_, Promise, Control,  Promises, Util, Template) ->
+define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Util', './controls/template', 'log'], ($,_, Promise, Control,  Promises, Util, Template, log) ->
 	if jsui_context?
 		return jsui_context;
 
@@ -8,8 +8,16 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 			@primaryControls = {};
 			@roots = []
 			@ioc = {}
+			@createRootFromSelector('body').then (@root) =>
+
+		initMainRoot: (selector) =>
+			return new Promise (resolve, reject) =>
+				return @createRootFromSelector(selector).then (@root) =>
+					return resolve();
 
 		setControlBaseObject: (@ioc = {}) =>
+			return new Promise (resolve, reject) =>
+				return resolve();
 
 
 		getPrimaryControl: (name) =>
@@ -24,8 +32,12 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 				$(target).attr('id', root.model.get("Id"));
 				@roots.push root;
 				return resolve(root);
+		loadControlsFromJson: (path, parent = null) =>
+			return new Promise (resolve, reject) =>
+				requirejs ["text!#{path}.json"], (json) =>
+					return @loadControlsFromString(json, parent).then resolve, reject;
 
-		loadControlsFromString: (text, parent) =>
+		loadControlsFromString: (text, parent = null) =>
 			return new Promise (resolve, reject) =>
 				obj = Util.jsonToObject(text);
 				return  @loadControlsFromObject(obj, parent).then (control) =>
@@ -82,7 +94,33 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 							return resolve(c);
 						, reject
 							
-					
+		processScriptTags: () =>
+			return new Promise (resolve, reject) =>
+				promises = new Promises();
+				context = @;
+				$("[type='jsui/json5']")
+					.each () ->
+						promises.push context.createScriptTag, context, [this];
+					.promise().done () =>
+						return promises.chain().then resolve, reject;
+
+		getScriptTagContents: (scriptTag) =>
+			return new Promise (resolve, reject) =>
+				jsonsrc = $(scriptTag).attr("json-src")
+				if jsonsrc?
+					return requirejs ["text!#{jsonsrc}.json"], resolve
+				else
+					return resolve($(scriptTag).html())
+
+		createScriptTag: (scriptTag) =>
+			return new Promise (resolve, reject) =>
+				return @getScriptTagContents(scriptTag).then (json) =>
+					newElement = $('<div></div>');
+					newContent = $(scriptTag).replaceWith(newElement);
+					log "ui", @;
+					return @createRootFromSelector(newElement).then (root) =>
+						return @loadControlsFromString(json, root).then resolve, reject;		
+
 		childCheck: (obj, control, primary) =>
 			return new Promise (resolve, reject) =>
 				if obj.Children?
