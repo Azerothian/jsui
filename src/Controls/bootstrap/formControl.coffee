@@ -62,6 +62,7 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 							when "email" then validators.push @OnValidationEmail, @, [rule]
 							when "compare" then validators.push @OnValidationCompare, @, [rule]
 							when "custom" then validators.push @OnValidationCustom, @, [rule]
+							when "regex" then validators.push @OnValidationRegEx, @, [rule]
 					#log "start ALL"
 					return validators.chain()
 						.then (results) =>
@@ -88,32 +89,35 @@ define ['jquery', 'bluebird','../../lib/Promises', '../template', '../../util', 
 
 		OnValidationEmail: (rule) =>
 			return new Promise (resolve, reject) =>
-				emailPattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+				rule.pattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+				return @OnValidationRegEx(rule).then resolve, reject;
+		
+		OnValidationRegEx: (rule) =>
+			return new Promise (resolve, reject) =>
 				text = @getText();
-				#log "formTextBox - OnValidationEmail", text.match emailPattern
-				if not text.match emailPattern
+				if not text.match rule.pattern
 					return @OnValidationFailed(rule, reject);
 				return resolve();
-		
+
 		OnValidationCompare: (rule) =>
 			return new Promise (resolve, reject) =>
-				log 'formControl - OnValidationCompare';
+				#log 'formControl - OnValidationCompare';
 				target = @primary[rule.targetControl].getText()
 				text = @getText()
-				log 'formControl - OnValidationCompare', text, target;
+				#log 'formControl - OnValidationCompare', text, target;
 				if target is text
-					log 'formControl - OnValidationCompare - success', text, target;
+					#log 'formControl - OnValidationCompare - success', text, target;
 					return resolve();	
 				else 
-					log 'formControl - OnValidationCompare - failed', text, target;
+					#log 'formControl - OnValidationCompare - failed', text, target;
 					return @OnValidationFailed(rule, reject);
+
 		OnValidationCustom: (rule) =>
 			return new Promise (resolve, reject) =>
-				text = @getText();
-				if rule.OnValidate?
-					if !rule.OnValidate(text)
+				if @primary[rule.onEvent]?
+					return @primary[rule.onEvent](rule).then resolve, () =>
 						return @OnValidationFailed(rule, reject);
-				return resolve();
+
 		OnValidationFailed: (rule, reject) =>
 			#log "formTextBox - OnValidationFailed", rule
 			return reject(rule);
