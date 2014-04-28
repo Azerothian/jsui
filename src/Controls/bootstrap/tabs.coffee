@@ -1,6 +1,6 @@
 
-define ['jsui', 'jquery', 'bluebird','../../lib/Promises','../html', '../template', '../../util', 'log'], (jsui, $, Promise, Promises, Html, Template, util, log) ->
-	return class tabs extends Template
+define ['jsui', 'jquery', 'bluebird','../../lib/Promises', '../html', '../template','./tab', '../../util', 'log'], (jsui, $, Promise, Promises, Html, Template, Tab, util, log) ->
+	return class Tabs extends Template
 		constructor: () ->
 			super;
 			@model.on "Items", @SetData
@@ -15,30 +15,10 @@ define ['jsui', 'jquery', 'bluebird','../../lib/Promises','../html', '../templat
 						
 
 
-		addTab: (tab) =>
+		addTab: (tabConfig) =>
 			return new Promise (resolve, reject) =>
-				tabContent = new Html();
-				if tab.Active
-					active = "active";
-				tabContent.model.set "Class", "tab-pane #{active}"
-				return @divContent.addChild(tabContent).then () =>
-					tabHeader = new Html();
-					tabHeader.model.set "TagName", "li";
-					if tab.Active
-						tabHeader.model.set "Class", active;
-					tabHeader.model.set 'Html', "<a href='##{tabContent.model.get('Id')}' data-toggle='tab'>#{tab.DisplayName}</a>"
-					onrender = tabHeader.OnRender
-					tabHeader.OnRender = () =>
-						return new Promise (res, rej) =>
-							return onrender().then () =>
-								headerLink = "##{tabHeader.model.get('Id')} > a"
-								$(headerLink).click () =>
-									$(headerLink).tab('show')
-								return res();
-
-					return @ulHeader.addChild(tabHeader).then () =>
-						return jsui.loadControlsFromObject(tab.Children, tabContent, @primary).then resolve, reject
-
+				tab = new Tab(@, tabConfig);
+				return @addChild(tab).then resolve, reject;
 
 
 		OnInit: () =>

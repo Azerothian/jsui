@@ -42,14 +42,19 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 				obj = Util.jsonToObject(text);
 				return  @loadControlsFromObject(obj, parent, primary).then (control) =>
 					return resolve(control);
-
 		loadControlsFromObject: (obj, parent = null, primary = null) =>
+			return new Promise (resolve, reject) =>
+				return @__loadControlsFromObject(obj, parent, primary).then (control) =>
+					return control.OnLoadFinished().then () =>
+						return resolve(control);
+
+		__loadControlsFromObject: (obj, parent = null, primary = null) =>
 			return new Promise (resolve, reject) =>
 				#console.log "Loading control", obj;
 				if Util.isArray(obj)
 					if not primary? or not parent?
 						return reject("loadControlsFromObject - Error: primary control not set when using array as base");
-					return @loadChildren(parent, obj, primary).then () =>
+					return @__loadChildren(parent, obj, primary).then () =>
 						 return resolve(primary); # returns the main control for reference
 
 				controlType = obj.Control || "jsui/controls/html";
@@ -92,15 +97,29 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 						primary[Name] = c;
 					if parent?
 						return parent.addChild(c).then () =>
-							return @childCheck(obj, c, primary).then () =>
+							return @__childCheck(obj, c, primary).then () =>
 								return resolve(c);
 							, reject
 						, reject
 					else
-						return @childCheck(obj, c, primary).then () =>
+						return @__childCheck(obj, c, primary).then () =>
 							return resolve(c);
 						, reject
-							
+		__loadChildren: (parent, children, primary) =>
+			return new Promise (resolve, reject) =>
+				promises = new Promises();        
+				for child in children
+					promises.push @__loadControlsFromObject, @, [child, parent, primary]
+				return promises.chain().then (results) =>
+					return resolve();
+		__childCheck: (obj, control, primary) =>
+			return new Promise (resolve, reject) =>
+				if obj.Children?
+					return @__loadChildren(control, obj.Children, primary).then () =>
+						return resolve();
+					, reject
+				return resolve();
+
 		processScriptTags: () =>
 			return new Promise (resolve, reject) =>
 				promises = new Promises();
@@ -128,20 +147,8 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 					return @createRootFromSelector(newElement).then (root) =>
 						return @loadControlsFromString(json, root).then resolve, reject;		
 
-		childCheck: (obj, control, primary) =>
-			return new Promise (resolve, reject) =>
-				if obj.Children?
-					return @loadChildren(control, obj.Children, primary).then () =>
-						return resolve();
-					, reject
-				return resolve();
 
-		loadChildren: (parent, children, primary) =>
-			return new Promise (resolve, reject) =>
-				promises = new Promises();        
-				for child in children
-					promises.push @loadControlsFromObject, @, [child, parent, primary]
-				return promises.chain().then (results) =>
-					return resolve();
+
+
 	jsui_context = new jsui;
 	return jsui_context;

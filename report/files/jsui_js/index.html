@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">75.11</p>
+      <p class="stat">75.44</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">250</p>
+      <p class="stat">269</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">55.09</p>
+      <p class="stat">57.76</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">2.64</p>
+      <p class="stat">2.83</p>
     </div>
   </div>
 </div>
@@ -103,11 +103,12 @@
     }
     jsui = (function() {
       function jsui() {
-        this.loadChildren = __bind(this.loadChildren, this);
-        this.childCheck = __bind(this.childCheck, this);
         this.createScriptTag = __bind(this.createScriptTag, this);
         this.getScriptTagContents = __bind(this.getScriptTagContents, this);
         this.processScriptTags = __bind(this.processScriptTags, this);
+        this.__childCheck = __bind(this.__childCheck, this);
+        this.__loadChildren = __bind(this.__loadChildren, this);
+        this.__loadControlsFromObject = __bind(this.__loadControlsFromObject, this);
         this.loadControlsFromObject = __bind(this.loadControlsFromObject, this);
         this.loadControlsFromString = __bind(this.loadControlsFromString, this);
         this.loadControlsFromJson = __bind(this.loadControlsFromJson, this);
@@ -204,12 +205,30 @@
         }
         return new Promise((function(_this) {
           return function(resolve, reject) {
+            return _this.__loadControlsFromObject(obj, parent, primary).then(function(control) {
+              return control.OnLoadFinished().then(function() {
+                return resolve(control);
+              });
+            });
+          };
+        })(this));
+      };
+
+      jsui.prototype.__loadControlsFromObject = function(obj, parent, primary) {
+        if (parent == null) {
+          parent = null;
+        }
+        if (primary == null) {
+          primary = null;
+        }
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
             var controlType;
             if (Util.isArray(obj)) {
               if ((primary == null) || (parent == null)) {
                 return reject(&quot;loadControlsFromObject - Error: primary control not set when using array as base&quot;);
               }
-              return _this.loadChildren(parent, obj, primary).then(function() {
+              return _this.__loadChildren(parent, obj, primary).then(function() {
                 return resolve(primary);
               });
             }
@@ -245,16 +264,45 @@
               }
               if (parent != null) {
                 return parent.addChild(c).then(function() {
-                  return _this.childCheck(obj, c, primary).then(function() {
+                  return _this.__childCheck(obj, c, primary).then(function() {
                     return resolve(c);
                   }, reject);
                 }, reject);
               } else {
-                return _this.childCheck(obj, c, primary).then(function() {
+                return _this.__childCheck(obj, c, primary).then(function() {
                   return resolve(c);
                 }, reject);
               }
             });
+          };
+        })(this));
+      };
+
+      jsui.prototype.__loadChildren = function(parent, children, primary) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            var child, promises, _i, _len;
+            promises = new Promises();
+            for (_i = 0, _len = children.length; _i &lt; _len; _i++) {
+              child = children[_i];
+              promises.push(_this.__loadControlsFromObject, _this, [child, parent, primary]);
+            }
+            return promises.chain().then(function(results) {
+              return resolve();
+            });
+          };
+        })(this));
+      };
+
+      jsui.prototype.__childCheck = function(obj, control, primary) {
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            if (obj.Children != null) {
+              return _this.__loadChildren(control, obj.Children, primary).then(function() {
+                return resolve();
+              }, reject);
+            }
+            return resolve();
           };
         })(this));
       };
@@ -298,35 +346,6 @@
               return _this.createRootFromSelector(newElement).then(function(root) {
                 return _this.loadControlsFromString(json, root).then(resolve, reject);
               });
-            });
-          };
-        })(this));
-      };
-
-      jsui.prototype.childCheck = function(obj, control, primary) {
-        return new Promise((function(_this) {
-          return function(resolve, reject) {
-            if (obj.Children != null) {
-              return _this.loadChildren(control, obj.Children, primary).then(function() {
-                return resolve();
-              }, reject);
-            }
-            return resolve();
-          };
-        })(this));
-      };
-
-      jsui.prototype.loadChildren = function(parent, children, primary) {
-        return new Promise((function(_this) {
-          return function(resolve, reject) {
-            var child, promises, _i, _len;
-            promises = new Promises();
-            for (_i = 0, _len = children.length; _i &lt; _len; _i++) {
-              child = children[_i];
-              promises.push(_this.loadControlsFromObject, _this, [child, parent, primary]);
-            }
-            return promises.chain().then(function(results) {
-              return resolve();
             });
           };
         })(this));

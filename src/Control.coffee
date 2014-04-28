@@ -99,13 +99,15 @@ define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promis
 					promises.push @["OnRender"], @, ["OnRender"]
 				promises.push @renderChildren, @, ["renderChildren"]
 				promises.push @renderFinished, @, ["renderFinished"]
+				if @["OnAfterRender"]?
+					promises.push @["OnAfterRender"], @, ["OnAfterRender"]
 
 				#console.log("Control: Render", promises.length);
 
-				return promises.chain().then(() =>
-					#console.log("Control - Finished Rendering");
+				return promises.chain().then () =>
+					log("Control - Finished Rendering");
 					return resolve();
-				,reject)
+				, reject
 				.caught () =>
 					console.log(arguments);
 		getLengthOfChildren: () =>
@@ -114,15 +116,15 @@ define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promis
 		renderChildren: () =>
 			return new Promise (resolve, reject) =>
 				childrenLength = @getLengthOfChildren();
-			 # console.log("Control: renderChildren" ,childrenLength);
+				log "Control: renderChildren" , childrenLength;
 				promises = new Promises();
 				for child of @children
 					promises.push @children[child].render, @children[child]
-				return promises.chain().then(resolve, reject);
+				return promises.chain().then resolve, reject;
 				
 		renderFinished: () =>
 			return new Promise (resolve, reject) =>
-				#console.log("Control: renderFinished");
+				log("Control: renderFinished");
 				@isRendered = true;
 				return resolve();
 		clearChildren: () =>
@@ -134,6 +136,15 @@ define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promis
 					promises.push child.removeChild, child, [child]
 				return promises.chain().then () =>
 					return resolve();
+
+		OnLoadFinished: () =>
+			return new Promise (resolve, reject) =>
+				if @children? and @getLengthOfChildren() > 0
+					promises = new Promises();
+					for child in @children
+						promises.push child.OnLoadFinished, child, [];
+					return promises.chain().then resolve, reject
+				return resolve();
 
 		dispose: () =>
 			return new Promise (resolve, reject) =>

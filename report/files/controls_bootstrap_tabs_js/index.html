@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Plato - controls/bootstrap/tabs.js</title>
+  <title>Plato - Controls/bootstrap/tabs.js</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
@@ -37,7 +37,7 @@
 
 <div class="jumbotron">
   <div class="container">
-    <h1>controls/bootstrap/tabs.js</h1>
+    <h1>Controls/bootstrap/tabs.js</h1>
   </div>
 </div>
 
@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">72.91</p>
+      <p class="stat">72.32</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">102</p>
+      <p class="stat">74</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">29.93</p>
+      <p class="stat">27.59</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">1.28</p>
+      <p class="stat">0.87</p>
     </div>
   </div>
 </div>
@@ -95,20 +95,20 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define([&#039;jsui&#039;, &#039;jquery&#039;, &#039;bluebird&#039;, &#039;../../lib/Promises&#039;, &#039;../html&#039;, &#039;../template&#039;, &#039;../../util&#039;, &#039;log&#039;], function(jsui, $, Promise, Promises, Html, Template, util, log) {
-    var tabs;
-    return tabs = (function(_super) {
-      __extends(tabs, _super);
+  define([&#039;jsui&#039;, &#039;jquery&#039;, &#039;bluebird&#039;, &#039;../../lib/Promises&#039;, &#039;../html&#039;, &#039;../template&#039;, &#039;./tab&#039;, &#039;../../util&#039;, &#039;log&#039;], function(jsui, $, Promise, Promises, Html, Template, Tab, util, log) {
+    var Tabs;
+    return Tabs = (function(_super) {
+      __extends(Tabs, _super);
 
-      function tabs() {
+      function Tabs() {
         this.OnInit = __bind(this.OnInit, this);
         this.addTab = __bind(this.addTab, this);
         this.SetData = __bind(this.SetData, this);
-        tabs.__super__.constructor.apply(this, arguments);
+        Tabs.__super__.constructor.apply(this, arguments);
         this.model.on(&quot;Items&quot;, this.SetData);
       }
 
-      tabs.prototype.SetData = function(value) {
+      Tabs.prototype.SetData = function(value) {
         var funcs, tab, _i, _len;
         if (value == null) {
           value = this.model.get(&quot;Items&quot;);
@@ -125,45 +125,17 @@
         }
       };
 
-      tabs.prototype.addTab = function(tab) {
+      Tabs.prototype.addTab = function(tabConfig) {
         return new Promise((function(_this) {
           return function(resolve, reject) {
-            var active, tabContent;
-            tabContent = new Html();
-            if (tab.Active) {
-              active = &quot;active&quot;;
-            }
-            tabContent.model.set(&quot;Class&quot;, &quot;tab-pane &quot; + active);
-            return _this.divContent.addChild(tabContent).then(function() {
-              var onrender, tabHeader;
-              tabHeader = new Html();
-              tabHeader.model.set(&quot;TagName&quot;, &quot;li&quot;);
-              if (tab.Active) {
-                tabHeader.model.set(&quot;Class&quot;, active);
-              }
-              tabHeader.model.set(&#039;Html&#039;, &quot;&lt;a href=&#039;#&quot; + (tabContent.model.get(&#039;Id&#039;)) + &quot;&#039; data-toggle=&#039;tab&#039;&gt;&quot; + tab.DisplayName + &quot;&lt;/a&gt;&quot;);
-              onrender = tabHeader.OnRender;
-              tabHeader.OnRender = function() {
-                return new Promise(function(res, rej) {
-                  return onrender().then(function() {
-                    var headerLink;
-                    headerLink = &quot;#&quot; + (tabHeader.model.get(&#039;Id&#039;)) + &quot; &gt; a&quot;;
-                    $(headerLink).click(function() {
-                      return $(headerLink).tab(&#039;show&#039;);
-                    });
-                    return res();
-                  });
-                });
-              };
-              return _this.ulHeader.addChild(tabHeader).then(function() {
-                return jsui.loadControlsFromObject(tab.Children, tabContent, _this.primary).then(resolve, reject);
-              });
-            });
+            var tab;
+            tab = new Tab(_this, tabConfig);
+            return _this.addChild(tab).then(resolve, reject);
           };
         })(this));
       };
 
-      tabs.prototype.OnInit = function() {
+      Tabs.prototype.OnInit = function() {
         return new Promise((function(_this) {
           return function(resolve, reject) {
             _this.elements = [
@@ -181,12 +153,12 @@
                 ]
               }
             ];
-            return tabs.__super__.OnInit.call(_this).then(resolve, reject);
+            return Tabs.__super__.OnInit.call(_this).then(resolve, reject);
           };
         })(this));
       };
 
-      return tabs;
+      return Tabs;
 
     })(Template);
   });
