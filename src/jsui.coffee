@@ -32,15 +32,15 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 				$(target).attr('id', root.model.get("Id"));
 				@roots.push root;
 				return resolve(root);
-		loadControlsFromJson: (path, parent = null) =>
+		loadControlsFromJson: (path, parent = null, primary = null) =>
 			return new Promise (resolve, reject) =>
 				requirejs ["text!#{path}.json"], (json) =>
-					return @loadControlsFromString(json, parent).then resolve, reject;
+					return @loadControlsFromString(json, parent, primary).then resolve, reject;
 
-		loadControlsFromString: (text, parent = null) =>
+		loadControlsFromString: (text, parent = null, primary = null) =>
 			return new Promise (resolve, reject) =>
 				obj = Util.jsonToObject(text);
-				return  @loadControlsFromObject(obj, parent).then (control) =>
+				return  @loadControlsFromObject(obj, parent, primary).then (control) =>
 					return resolve(control);
 
 		loadControlsFromObject: (obj, parent = null, primary = null) =>
@@ -53,6 +53,13 @@ define ['jquery','underscore', 'bluebird', './Control', './lib/Promises', './Uti
 						 return resolve(primary); # returns the main control for reference
 
 				controlType = obj.Control || "jsui/controls/html";
+
+				if obj.IsPrimary
+					primary = null;
+
+				if obj.Source?
+					return @loadControlsFromJson(obj.Source, parent, primary).then resolve, reject
+
 				return requirejs [controlType], (control) =>
 				 
 					args = obj.Parameters || [];
