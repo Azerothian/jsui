@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
-      <p class="stat">71.05</p>
+      <p class="stat">71.19</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
-      <p class="stat">261</p>
+      <p class="stat">258</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
-      <p class="stat">89.26</p>
+      <p class="stat">91.40</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
-      <p class="stat">2.71</p>
+      <p class="stat">2.68</p>
     </div>
   </div>
 </div>
@@ -248,7 +248,6 @@
               promises.push(_this[&quot;OnAfterRender&quot;], _this, [&quot;OnAfterRender&quot;]);
             }
             return promises.chain().then(function() {
-              log(&quot;Control - Finished Rendering&quot;);
               return resolve();
             }, reject).caught(function() {
               return console.log(arguments);
@@ -266,7 +265,6 @@
           return function(resolve, reject) {
             var child, childrenLength, promises;
             childrenLength = _this.getLengthOfChildren();
-            log(&quot;Control: renderChildren&quot;, childrenLength);
             promises = new Promises();
             for (child in _this.children) {
               promises.push(_this.children[child].render, _this.children[child]);
@@ -279,7 +277,6 @@
       Control.prototype.renderFinished = function() {
         return new Promise((function(_this) {
           return function(resolve, reject) {
-            log(&quot;Control: renderFinished&quot;);
             _this.isRendered = true;
             return resolve();
           };

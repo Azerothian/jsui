@@ -105,7 +105,7 @@ define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promis
 				#console.log("Control: Render", promises.length);
 
 				return promises.chain().then () =>
-					log("Control - Finished Rendering");
+					#log("Control - Finished Rendering");
 					return resolve();
 				, reject
 				.caught () =>
@@ -116,7 +116,7 @@ define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promis
 		renderChildren: () =>
 			return new Promise (resolve, reject) =>
 				childrenLength = @getLengthOfChildren();
-				log "Control: renderChildren" , childrenLength;
+				#log "Control: renderChildren" , childrenLength;
 				promises = new Promises();
 				for child of @children
 					promises.push @children[child].render, @children[child]
@@ -124,7 +124,7 @@ define ['./Model','./lib/Promises', './Util', 'bluebird', 'log'], (Model, Promis
 				
 		renderFinished: () =>
 			return new Promise (resolve, reject) =>
-				log("Control: renderFinished");
+				#log("Control: renderFinished");
 				@isRendered = true;
 				return resolve();
 		clearChildren: () =>
